@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REBUILT Strategy Dashboard</title>
+<style>
+  :root {
+    --bg: #0F1115;
+    --panel: #171A21;
+    --panel-raised: #1F232C;
+    --border: #2A2F3A;
+    --text: #FFFFFF;
+    --text-dim: #9AA3B2;
+    --blue: #2D7DFF;
+    --blue-dim: #16305E;
+    --red: #FF4136;
+    --red-dim: #5E1A16;
+    --green: #35C77E;
+    --amber: #FFB020;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+    min-height: 100vh;
+    padding-bottom: 60px;
+  }
+
+  header {
+    padding: 18px 28px;
+    background: var(--panel);
+    border-bottom: 3px solid var(--blue);
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+  }
+
+  header h1 { margin: 0; font-size: 22px; }
+  header .sub { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); }
+
+  main {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  section.panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+
+  section.panel h2 {
+    margin: 0 0 14px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  /* ---------- Top bar: data inputs ---------- */
+  .topbar {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr 1fr;
+    gap: 20px;
+  }
+
+  .topbar-group { display: flex; flex-direction: column; gap: 8px; }
+
+  .topbar-group .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+  label {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 600;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="password"],
+  select {
+    background: #101319;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 10px 10px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+
+  input[type="file"] {
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+
+  button {
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color .15s ease, transform .1s ease;
+  }
+
+  button:hover { background: #4C8FFF; }
+  button:active { transform: scale(0.97); }
+
+  button.secondary {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text-dim);
+  }
+  button.secondary:hover { border-color: var(--blue); color: var(--text); background: transparent; }
+
+  .status-text { font-size: 12px; color: var(--text-dim); }
+  .status-text.ok { color: var(--green); }
+  .status-text.err { color: var(--red); }
+
+  /* ---------- Match selection ---------- */
+  .match-select {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .match-select .field { display: flex; flex-direction: column; gap: 6px; }
+  .match-select input[type="number"] { width: 110px; }
+
+  /* ---------- Alliance layout (50/50 split) ---------- */
+  .alliance-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .alliance {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+  }
+
+  .alliance.blue-side { border-top: 4px solid var(--blue); }
+  .alliance.red-side { border-top: 4px solid var(--red); }
+
+  .alliance-title {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .blue-side .alliance-title { color: var(--blue); }
+  .red-side .alliance-title { color: var(--red); }
+
+  .team-inputs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .team-inputs input {
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .cards-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  /* ---------- Strategy card ---------- */
+  .strategy-card {
+    background: var(--panel-raised);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 260px;
+  }
+
+  .strategy-card .team-number {
+    font-size: 26px;
+    font-weight: 800;
+  }
+
+  .strategy-card .match-count {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: -8px;
+  }
+
+  .warning-banner {
+    background: var(--red-dim);
+    color: #FFD3D0;
+    border: 1px solid var(--red);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    animation: pulseWarning 1.4s ease-in-out infinite;
+  }
+
+  @keyframes pulseWarning {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+
+  .stat-block { font-size: 13px; }
+  .stat-block .stat-label {
+    color: var(--text-dim);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+  .stat-block .stat-value { font-weight: 600; }
+
+  .defense-flag {
+    background: rgba(255, 176, 32, 0.12);
+    border: 1px solid var(--amber);
+    color: var(--amber);
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .no-data {
+    color: var(--text-dim);
+    font-size: 13px;
+    text-align: center;
+    margin-top: 40px;
+  }
+
+  /* ---------- AI section ---------- */
+  .ai-section { text-align: left; }
+  .ai-controls { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+
+  .ai-output {
+    background: #101319;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    min-height: 80px;
+  }
+
+  .ai-output.empty { color: var(--text-dim); font-style: italic; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>REBUILT Strategy Dashboard</h1>
+  <span class="sub">FRC Match Prep · Offline-First</span>
+</header>
+
+<main>
+
+  <!-- ============ DATA INPUT TOP BAR ============ -->
+  <section class="panel">
+    <h2>Data Sources</h2>
+    <div class="topbar">
+
+      <div class="topbar-group">
+        <label for="csvFile">Scouting CSV (scouting_data.csv)</label>
+        <div class="row">
+          <input type="file" id="csvFile" accept=".csv">
+        </div>
+        <span class="status-text" id="csvStatus">No CSV loaded yet.</span>
+      </div>
+
+      <div class="topbar-group">
+        <label>The Blue Alliance API</label>
+        <div class="row">
+          <input type="password" id="tbaApiKey" placeholder="TBA Auth Key" style="flex:1;">
+          <input type="text" id="tbaEventKey" placeholder="Event Key e.g. 2026mitry" style="flex:1;">
+          <button id="fetchScheduleBtn">Fetch Event Schedule</button>
+        </div>
+        <span class="status-text" id="tbaStatus">No schedule loaded. You can also enter team numbers manually below.</span>
+      </div>
+
+      <div class="topbar-group">
+        <label>AI Assistant</label>
+        <div class="row">
+          <select id="aiProvider" style="flex:1;">
+            <option value="openai">OpenAI (GPT)</option>
+            <option value="anthropic">Anthropic (Claude)</option>
+          </select>
+          <input type="password" id="aiApiKey" placeholder="AI API Key" style="flex:1;">
+        </div>
+        <span class="status-text">Key is only used client-side for the fetch call below — it is never stored or sent anywhere else.</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ MATCH SELECTION ============ -->
+  <section class="panel">
+    <h2>Match Selection</h2>
+    <div class="match-select">
+      <div class="field">
+        <label for="matchNumber">Match Number</label>
+        <input type="number" id="matchNumber" inputmode="numeric" placeholder="e.g. 12">
+      </div>
+      <button id="loadMatchBtn">Load Match From Schedule</button>
+      <button class="secondary" id="buildCardsBtn">Build Strategy Cards</button>
+    </div>
+  </section>
+
+  <!-- ============ ALLIANCE LAYOUT ============ -->
+  <section class="alliance-layout">
+
+    <div class="alliance blue-side">
+      <div class="alliance-title">Blue Alliance</div>
+      <div class="team-inputs">
+        <input type="number" id="blueTeam1" inputmode="numeric" placeholder="Team">
+        <input type="number" id="blueTeam2" inputmode="numeric" placeholder="Team">
+        <input type="number" id="blueTeam3" inputmode="numeric" placeholder="Team">
+      </div>
+      <div class="cards-row" id="blueCards">
+        <div class="no-data">Enter teams and click "Build Strategy Cards".</div>
+      </div>
+    </div>
+
+    <div class="alliance red-side">
+      <div class="alliance-title">Red Alliance</div>
+      <div class="team-inputs">
+        <input type="number" id="redTeam1" inputmode="numeric" placeholder="Team">
+        <input type="number" id="redTeam2" inputmode="numeric" placeholder="Team">
+        <input type="number" id="redTeam3" inputmode="numeric" placeholder="Team">
+      </div>
+      <div class="cards-row" id="redCards">
+        <div class="no-data">Enter teams and click "Build Strategy Cards".</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ AI STRATEGY MATCHUP ============ -->
+  <section class="panel ai-section">
+    <h2>AI Strategy Matchup</h2>
+    <div class="ai-controls">
+      <button id="generateAIBtn">Generate AI Strategy Matchup</button>
+      <span class="status-text" id="aiStatus"></span>
+    </div>
+    <div class="ai-output empty" id="aiOutput">AI-generated win conditions will appear here once you build strategy cards and click the button above.</div>
+  </section>
+
+</main>
+
+<script>
+/* =========================================================================
+   GLOBAL STATE
+   ========================================================================= */
+let scoutingData = [];   // Array of row objects parsed from the uploaded CSV
+let scheduleData = null; // Array of TBA match objects (simple model)
+let lastComputedStats = { blue: [], red: [] }; // Cached stats for the AI prompt
+
+/* =========================================================================
+   1. CSV PARSING (Vanilla JS, RFC4180-style — handles quoted fields that
+      contain commas, since the Master Receiver quotes Notes fields that
+      have embedded commas).
+   ========================================================================= */
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let field = '';
+  let inQuotes = false;
+
+  // Normalize line endings so \r\n and \n behave the same.
+  const normalized = text.replace(/\r\n/g, '\n');
+
+  for (let i = 0; i < normalized.length; i++) {
+    const char = normalized[i];
+
+    if (inQuotes) {
+      if (char === '"') {
+        // A doubled quote inside a quoted field is an escaped literal quote.
+        if (normalized[i + 1] === '"') {
+          field += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        field += char;
+      }
+    } else {
+      if (char === '"') {
+        inQuotes = true;
+      } else if (char === ',') {
+        row.push(field);
+        field = '';
+      } else if (char === '\n') {
+        row.push(field);
+        rows.push(row);
+        row = [];
+        field = '';
+      } else {
+        field += char;
+      }
+    }
+  }
+  // Flush the last field/row if the file doesn't end with a newline.
+  if (field.length > 0 || row.length > 0) {
+    row.push(field);
+    rows.push(row);
+  }
+
+  // Drop any fully empty trailing rows.
+  return rows.filter(r => !(r.length === 1 && r[0].trim() === ''));
+}
+
+// Converts the raw row array (with a header row at index 0) into an array
+// of { HeaderName: value } objects, which is far easier to work with.
+function csvRowsToObjects(rows) {
+  if (rows.length === 0) return [];
+  const headers = rows[0].map(h => h.trim());
+  const objects = [];
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    const obj = {};
+    headers.forEach((h, idx) => { obj[h] = (row[idx] || '').trim(); });
+    objects.push(obj);
+  }
+  return objects;
+}
+
+document.getElementById('csvFile').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    const rows = parseCSV(evt.target.result);
+    scoutingData = csvRowsToObjects(rows);
+
+    const status = document.getElementById('csvStatus');
+    if (scoutingData.length === 0) {
+      status.textContent = 'CSV parsed but no data rows were found.';
+      status.className = 'status-text err';
+    } else {
+      status.textContent = `Loaded ${scoutingData.length} scouted match rows.`;
+      status.className = 'status-text ok';
+    }
+  };
+  reader.onerror = () => {
+    const status = document.getElementById('csvStatus');
+    status.textContent = 'Failed to read file.';
+    status.className = 'status-text err';
+  };
+  reader.readAsText(file);
+});
+
+/* =========================================================================
+   2. THE BLUE ALLIANCE (TBA) SCHEDULE FETCH
+      Saved to localStorage so the schedule survives a page reload / works
+      offline once it has been fetched at least once with internet access.
+   ========================================================================= */
+async function fetchEventSchedule() {
+  const apiKey = document.getElementById('tbaApiKey').value.trim();
+  const eventKey = document.getElementById('tbaEventKey').value.trim();
+  const status = document.getElementById('tbaStatus');
+
+  if (!apiKey || !eventKey) {
+    status.textContent = 'Enter both a TBA API key and an event key first.';
+    status.className = 'status-text err';
+    return;
+  }
+
+  status.textContent = 'Fetching schedule…';
+  status.className = 'status-text';
+
+  try {
+    const res = await fetch(`https://www.thebluealliance.com/api/v3/event/${eventKey}/matches/simple`, {
+      headers: { 'X-TBA-Auth-Key': apiKey }
+    });
+    if (!res.ok) throw new Error(`TBA responded with ${res.status}`);
+    const data = await res.json();
+
+    scheduleData = data;
+    localStorage.setItem('rebuilt_tba_schedule', JSON.stringify(data));
+    localStorage.setItem('rebuilt_tba_event_key', eventKey);
+
+    status.textContent = `Loaded ${data.length} matches for ${eventKey}. Saved for offline use.`;
+    status.className = 'status-text ok';
+
+    // If a match number is already typed in, auto-populate right away.
+    populateTeamsFromSchedule();
+  } catch (err) {
+    status.textContent = `Error fetching schedule: ${err.message}`;
+    status.className = 'status-text err';
+  }
+}
+document.getElementById('fetchScheduleBtn').addEventListener('click', fetchEventSchedule);
+
+// On page load, try to restore a previously fetched schedule from
+// localStorage so the dashboard is usable with zero connectivity.
+window.addEventListener('load', () => {
+  const cached = localStorage.getItem('rebuilt_tba_schedule');
+  const cachedEventKey = localStorage.getItem('rebuilt_tba_event_key');
+  if (cached) {
+    try {
+      scheduleData = JSON.parse(cached);
+      document.getElementById('tbaEventKey').value = cachedEventKey || '';
+      document.getElementById('tbaStatus').textContent =
+        `Restored cached schedule (${scheduleData.length} matches) from local storage.`;
+      document.getElementById('tbaStatus').className = 'status-text ok';
+    } catch (e) { /* corrupted cache, ignore */ }
+  }
+});
+
+// Looks up the currently entered match number in the cached TBA schedule
+// (qualification matches) and fills in the 6 team number inputs.
+function populateTeamsFromSchedule() {
+  const matchNumber = parseInt(document.getElementById('matchNumber').value, 10);
+  const status = document.getElementById('tbaStatus');
+
+  if (!scheduleData) {
+    status.textContent = 'No schedule loaded yet — enter team numbers manually.';
+    status.className = 'status-text err';
+    return;
+  }
+  if (!matchNumber) {
+    status.textContent = 'Enter a match number first.';
+    status.className = 'status-text err';
+    return;
+  }
+
+  const match = scheduleData.find(m => m.comp_level === 'qm' && m.match_number === matchNumber);
+  if (!match) {
+    status.textContent = `No qualification match #${matchNumber} found in the loaded schedule.`;
+    status.className = 'status-text err';
+    return;
+  }
+
+  // TBA team keys look like "frc254" — strip the "frc" prefix.
+  const stripKey = (key) => key.replace('frc', '');
+  const blueTeams = match.alliances.blue.team_keys.map(stripKey);
+  const redTeams = match.alliances.red.team_keys.map(stripKey);
+
+  document.getElementById('blueTeam1').value = blueTeams[0] || '';
+  document.getElementById('blueTeam2').value = blueTeams[1] || '';
+  document.getElementById('blueTeam3').value = blueTeams[2] || '';
+  document.getElementById('redTeam1').value = redTeams[0] || '';
+  document.getElementById('redTeam2').value = redTeams[1] || '';
+  document.getElementById('redTeam3').value = redTeams[2] || '';
+
+  status.textContent = `Match ${matchNumber} loaded from schedule.`;
+  status.className = 'status-text ok';
+}
+document.getElementById('loadMatchBtn').addEventListener('click', populateTeamsFromSchedule);
+
+/* =========================================================================
+   3. STAT CALCULATIONS
+      All math is derived directly from the parsed scoutingData rows —
+      nothing here depends on TBA or AI being configured.
+   ========================================================================= */
+
+// True/false flags in the CSV are stored as "1"/"0" strings by the
+// scouting app, but we also accept "true"/"false" defensively.
+function toBool(val) {
+  return val === '1' || String(val).toLowerCase() === 'true';
+}
+
+function mean(nums) {
+  if (nums.length === 0) return 0;
+  return nums.reduce((a, b) => a + b, 0) / nums.length;
+}
+
+// Returns the most frequently occurring non-empty value in an array.
+function mode(values) {
+  const freq = {};
+  let best = null;
+  let bestCount = 0;
+  values.forEach(v => {
+    if (!v) return;
+    freq[v] = (freq[v] || 0) + 1;
+    if (freq[v] > bestCount) {
+      bestCount = freq[v];
+      best = v;
+    }
+  });
+  return best;
+}
+
+// Computes the full strategy-card stat set for a single team number.
+function computeTeamStats(teamNumber) {
+  const teamStr = String(teamNumber).trim();
+  const rows = scoutingData.filter(r => String(r.Team).trim() === teamStr);
+
+  if (rows.length === 0) {
+    return { teamNumber: teamStr, matches: 0 };
+  }
+
+  // --- Reliability: % of matches where the robot broke down or beached ---
+  const failureRows = rows.filter(r => toBool(r.BrokeDown) || toBool(r.Beached));
+  const reliabilityFailPct = (failureRows.length / rows.length) * 100;
+
+  // --- Auto Playmaker ---
+  const autoHighNums = rows.map(r => Number(r.AutoHigh) || 0);
+  const avgAutoHigh = mean(autoHighNums);
+  const maxAutoHigh = Math.max(...autoHighNums);
+  const mostAutoStartPos = mode(rows.map(r => r.AutoStartPos));
+
+  // --- Teleop Flow ---
+  const mostIntakeSource = mode(rows.map(r => r.IntakeSource));
+
+  // --- Defense Radar: only flagged if they played defense >25% of matches ---
+  const defenseRows = rows.filter(r => r.DefRole && r.DefRole !== 'None' && r.DefRole === 'Played Defense');
+  const defenseRate = (defenseRows.length / rows.length) * 100;
+  const mostDefRole = mode(rows.map(r => r.DefRole));
+  const mostDefSev = mode(defenseRows.map(r => r.DefSev));
+
+  return {
+    teamNumber: teamStr,
+    matches: rows.length,
+    reliabilityFailPct,
+    avgAutoHigh,
+    maxAutoHigh,
+    mostAutoStartPos: mostAutoStartPos || 'N/A',
+    mostIntakeSource: mostIntakeSource || 'N/A',
+    defenseRate,
+    mostDefRole: mostDefRole || 'None',
+    mostDefSev: mostDefSev || 'N/A'
+  };
+}
+
+/* =========================================================================
+   4. STRATEGY CARD RENDERING
+   ========================================================================= */
+function renderStrategyCard(stats) {
+  if (stats.matches === 0) {
+    return `
+      <div class="strategy-card">
+        <div class="team-number">${stats.teamNumber || '—'}</div>
+        <div class="no-data">No scouting data found for this team in the uploaded CSV.</div>
+      </div>`;
+  }
+
+  const warningHtml = stats.reliabilityFailPct > 0
+    ? `<div class="warning-banner">⚠ RELIABILITY RISK — ${stats.reliabilityFailPct.toFixed(0)}% of matches had a breakdown or beaching event</div>`
+    : '';
+
+  const defenseHtml = stats.defenseRate > 25
+    ? `<div class="defense-flag">Defense in ${stats.defenseRate.toFixed(0)}% of matches — ${stats.mostDefRole} (${stats.mostDefSev})</div>`
+    : '';
+
+  return `
+    <div class="strategy-card">
+      <div class="team-number">${stats.teamNumber}</div>
+      <div class="match-count">${stats.matches} scouted match${stats.matches === 1 ? '' : 'es'}</div>
+
+      ${warningHtml}
+
+      <div class="stat-block">
+        <div class="stat-label">Auto Playmaker</div>
+        <div class="stat-value">Start: ${stats.mostAutoStartPos} · Avg High: ${stats.avgAutoHigh.toFixed(1)} · Max High: ${stats.maxAutoHigh}</div>
+      </div>
+
+      <div class="stat-block">
+        <div class="stat-label">Teleop Flow</div>
+        <div class="stat-value">Primary Intake: ${stats.mostIntakeSource}</div>
+      </div>
+
+      ${defenseHtml}
+    </div>`;
+}
+
+function buildStrategyCards() {
+  const blueIds = ['blueTeam1', 'blueTeam2', 'blueTeam3'];
+  const redIds = ['redTeam1', 'redTeam2', 'redTeam3'];
+
+  const blueTeams = blueIds.map(id => document.getElementById(id).value.trim()).filter(Boolean);
+  const redTeams = redIds.map(id => document.getElementById(id).value.trim()).filter(Boolean);
+
+  const blueStats = blueTeams.map(computeTeamStats);
+  const redStats = redTeams.map(computeTeamStats);
+
+  lastComputedStats = { blue: blueStats, red: redStats };
+
+  const blueContainer = document.getElementById('blueCards');
+  const redContainer = document.getElementById('redCards');
+
+  blueContainer.innerHTML = blueStats.length
+    ? blueStats.map(renderStrategyCard).join('')
+    : '<div class="no-data">Enter Blue Alliance team numbers above.</div>';
+
+  redContainer.innerHTML = redStats.length
+    ? redStats.map(renderStrategyCard).join('')
+    : '<div class="no-data">Enter Red Alliance team numbers above.</div>';
+}
+document.getElementById('buildCardsBtn').addEventListener('click', buildStrategyCards);
+
+/* =========================================================================
+   5. AI STRATEGY MATCHUP
+      Compiles the already-computed stats into a plain-text prompt and
+      calls either OpenAI's Chat Completions API or Anthropic's Messages
+      API directly from the browser, based on the dropdown selection.
+
+      NOTE: Calling these APIs directly from client-side JS means the API
+      key is visible in the browser (devtools/network tab) for the person
+      using the page. That's an accepted tradeoff for a single-file, no-
+      backend tool — don't share a page with your key already filled in,
+      and be aware some providers (Anthropic especially) may block or
+      require special headers for direct browser calls due to CORS.
+   ========================================================================= */
+function statsToPromptLines(stats) {
+  if (stats.matches === 0) {
+    return `Team ${stats.teamNumber}: No scouting data available.`;
+  }
+  return `Team ${stats.teamNumber} (${stats.matches} matches): ` +
+    `Auto start ${stats.mostAutoStartPos}, avg auto high ${stats.avgAutoHigh.toFixed(1)} (max ${stats.maxAutoHigh}), ` +
+    `primary intake ${stats.mostIntakeSource}, ` +
+    `defense role ${stats.mostDefRole} (${stats.defenseRate.toFixed(0)}% of matches, severity ${stats.mostDefSev}), ` +
+    `reliability failure rate ${stats.reliabilityFailPct.toFixed(0)}%.`;
+}
+
+function buildMatchupPrompt() {
+  const blueLines = lastComputedStats.blue.map(statsToPromptLines).join('\n');
+  const redLines = lastComputedStats.red.map(statsToPromptLines).join('\n');
+
+  return `You are an expert FRC drive coach preparing a team for an upcoming qualification match.
+Below are aggregated scouting statistics for the Blue Alliance and Red Alliance.
+
+BLUE ALLIANCE:
+${blueLines}
+
+RED ALLIANCE:
+${redLines}
+
+Based purely on these stats, respond with exactly two sections:
+1. "Blue Alliance Win Conditions" — 3 concise bullet points on how Blue wins this match.
+2. "Red Alliance Win Conditions" — 3 concise bullet points on how Red wins this match.
+Keep each bullet to one sentence. Do not restate the raw stats, just the strategic takeaway.`;
+}
+
+async function callOpenAI(apiKey, prompt) {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: 'You are a concise, tactical FRC drive coach.' },
+        { role: 'user', content: prompt }
+      ],
+      max_tokens: 500
+    })
+  });
+  if (!res.ok) throw new Error(`OpenAI API error ${res.status}`);
+  const data = await res.json();
+  return data.choices[0].message.content;
+}
+
+async function callAnthropic(apiKey, prompt) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      // Required for direct browser calls to Anthropic's API; the account
+      // must have this enabled, and CORS restrictions may still apply.
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 600,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  if (!res.ok) throw new Error(`Anthropic API error ${res.status}`);
+  const data = await res.json();
+  return data.content[0].text;
+}
+
+async function generateAIStrategy() {
+  const provider = document.getElementById('aiProvider').value;
+  const apiKey = document.getElementById('aiApiKey').value.trim();
+  const outputEl = document.getElementById('aiOutput');
+  const statusEl = document.getElementById('aiStatus');
+
+  if (!apiKey) {
+    statusEl.textContent = 'Enter an AI API key first.';
+    statusEl.className = 'status-text err';
+    return;
+  }
+  if (lastComputedStats.blue.length === 0 && lastComputedStats.red.length === 0) {
+    statusEl.textContent = 'Build strategy cards first so there is data to analyze.';
+    statusEl.className = 'status-text err';
+    return;
+  }
+
+  const prompt = buildMatchupPrompt();
+  outputEl.textContent = 'Generating strategy…';
+  outputEl.className = 'ai-output';
+  statusEl.textContent = '';
+
+  try {
+    const responseText = provider === 'openai'
+      ? await callOpenAI(apiKey, prompt)
+      : await callAnthropic(apiKey, prompt);
+
+    outputEl.textContent = responseText;
+    outputEl.className = 'ai-output';
+  } catch (err) {
+    outputEl.textContent =
+      `Error generating strategy: ${err.message}\n\n` +
+      `If this is a CORS/network error, the provider may be blocking direct browser calls — ` +
+      `this typically requires a small server-side proxy to work reliably from GitHub Pages.`;
+    outputEl.className = 'ai-output';
+  }
+}
+document.getElementById('generateAIBtn').addEventListener('click', generateAIStrategy);
+</script>
+
+</body>
+</html>
