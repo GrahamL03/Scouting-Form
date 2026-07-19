@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REBUILT Master Receiver</title>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+  :root {
+    --bg: #121212;
+    --card: #1E1E1E;
+    --card-raised: #262626;
+    --text: #FFFFFF;
+    --text-dim: #A0A0A0;
+    --accent: #004F9E;
+    --accent-hover: #0064C9;
+    --border: #303030;
+    --green: #2FA86B;
+    --red: #D6483C;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 18px 24px;
+    background: var(--card);
+    border-bottom: 3px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  header .title .eyebrow {
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: var(--accent-hover);
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  header .title h1 {
+    margin: 4px 0 0;
+    font-size: 24px;
+  }
+
+  header .status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-dim);
+    font-weight: 600;
+  }
+
+  .status .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--red);
+    transition: background-color 0.2s ease;
+  }
+
+  .status .dot.live { background: var(--green); }
+
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  @media (max-width: 900px) {
+    main { grid-template-columns: 1fr; }
+  }
+
+  section.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+  }
+
+  section.card h2 {
+    margin: 0 0 14px;
+    font-size: 13px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  section.card h2::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+    border-radius: 2px;
+    display: inline-block;
+  }
+
+  #cameraSelect {
+    width: 100%;
+    background-color: #161616;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+
+  #reader {
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+    min-height: 260px;
+  }
+
+  #reader video {
+    border-radius: 12px;
+  }
+
+  .scan-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .last-scan {
+    margin-top: 16px;
+    background: var(--card-raised);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    word-break: break-all;
+    min-height: 40px;
+  }
+
+  .last-scan .label {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  button.action {
+    padding: 13px 16px;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+    flex: 1;
+  }
+
+  button.action:active { transform: scale(0.97); }
+
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+
+  .btn-danger { background: transparent; color: var(--red); border: 1.5px solid var(--red); }
+  .btn-danger:hover { background: rgba(214,72,60,0.12); }
+
+  .table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .table-toolbar .count-pill {
+    background: var(--card-raised);
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-dim);
+  }
+
+  .table-toolbar .count-pill strong { color: var(--text); }
+
+  .table-toolbar .toolbar-buttons {
+    display: flex;
+    gap: 10px;
+  }
+
+  .table-toolbar button.action { flex: none; padding: 12px 18px; }
+
+  .table-wrap {
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    max-height: 70vh;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--card-raised);
+    color: var(--text-dim);
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    z-index: 1;
+  }
+
+  tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  tbody tr:hover { background: var(--card-raised); }
+
+  tbody tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  /* Flash overlay on successful scan */
+  #flashOverlay {
+    position: fixed;
+    inset: 0;
+    background: var(--green);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 999;
+    transition: opacity 0.15s ease;
+  }
+
+  #flashOverlay.flash {
+    opacity: 0.35;
+    transition: opacity 0.05s ease;
+  }
+</style>
+</head>
+<body>
+
+<div id="flashOverlay"></div>
+
+<header>
+  <div class="title">
+    <div class="eyebrow">FRC · REBUILT</div>
+    <h1>Master Receiver</h1>
+  </div>
+  <div class="status">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusText">Camera not started</span>
+  </div>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>Scanner</h2>
+    <select id="cameraSelect"></select>
+    <div id="reader"></div>
+    <div class="scan-controls">
+      <button class="action btn-primary" id="startBtn">Start Camera</button>
+      <button class="action btn-danger" id="stopBtn">Stop Camera</button>
+    </div>
+    <div class="last-scan">
+      <span class="label">Last Scanned Payload</span>
+      <span id="lastScanText">—</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Scouting Log</h2>
+    <div class="table-toolbar">
+      <div class="count-pill"><strong id="rowCount">0</strong> rows captured</div>
+      <div class="toolbar-buttons">
+        <button class="action btn-primary" id="downloadBtn">Download CSV</button>
+        <button class="action btn-danger" id="clearBtn">Clear Table</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="dataTable">
+        <thead>
+          <tr id="tableHeadRow"></tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div class="empty-state" id="emptyState">No matches scanned yet. Point a scouting device's QR code at the camera.</div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // Expected CSV field order produced by the REBUILT scouting app.
+  // If a scanned row has a different field count, extra fields are folded
+  // into the final (Notes) column and missing fields are left blank.
+  const EXPECTED_HEADERS = [
+    'Match', 'Team', 'Scout', 'Taxi', 'AutoHigh', 'AutoLow',
+    'TeleHigh', 'TeleLow', 'DefRole', 'DefSev', 'BrokeDown', 'Beached',
+    'Climb', 'Notes'
+  ];
+  const DISPLAY_HEADERS = ['Timestamp', ...EXPECTED_HEADERS];
+
+  const rows = [];
+  let html5QrCode = null;
+  let lastPayload = null;
+  let lastScanTime = 0;
+
+  const readerEl = document.getElementById('reader');
+  const cameraSelect = document.getElementById('cameraSelect');
+  const startBtn = document.getElementById('startBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const flashOverlay = document.getElementById('flashOverlay');
+  const lastScanText = document.getElementById('lastScanText');
+  const tableHeadRow = document.getElementById('tableHeadRow');
+  const tableBody = document.getElementById('tableBody');
+  const emptyState = document.getElementById('emptyState');
+  const rowCountEl = document.getElementById('rowCount');
+
+  function buildHeaderRow() {
+    tableHeadRow.innerHTML = DISPLAY_HEADERS.map(h => `<th>${h}</th>`).join('');
+  }
+  buildHeaderRow();
+
+  function playBeep() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.2);
+      osc.onended = () => ctx.close();
+    } catch (e) {
+      // Audio not available; visual flash still signals success.
+    }
+  }
+
+  function flashGreen() {
+    flashOverlay.classList.add('flash');
+    setTimeout(() => flashOverlay.classList.remove('flash'), 180);
+  }
+
+  function normalizeRow(rawFields) {
+    const normalized = rawFields.slice(0, EXPECTED_HEADERS.length - 1);
+    while (normalized.length < EXPECTED_HEADERS.length - 1) normalized.push('');
+    const notes = rawFields.slice(EXPECTED_HEADERS.length - 1).join(',');
+    normalized.push(notes);
+    return normalized;
+  }
+
+  function addRow(decodedText) {
+    const rawFields = decodedText.split(',').map(f => f.trim());
+    const fields = normalizeRow(rawFields);
+    const timestamp = new Date().toLocaleTimeString();
+    const row = [timestamp, ...fields];
+    rows.push(row);
+    renderRow(row);
+    rowCountEl.textContent = rows.length;
+    emptyState.style.display = 'none';
+  }
+
+  function renderRow(row) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = row.map(cell => `<td>${escapeHtml(cell)}</td>`).join('');
+    tableBody.appendChild(tr);
+    tr.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function onScanSuccess(decodedText) {
+    const now = Date.now();
+    // Ignore duplicate reads of the same code within 3 seconds so a single
+    // physical scan doesn't get logged multiple times while held in frame.
+    if (decodedText === lastPayload && (now - lastScanTime) < 3000) return;
+    lastPayload = decodedText;
+    lastScanTime = now;
+
+    playBeep();
+    flashGreen();
+    lastScanText.textContent = decodedText;
+    addRow(decodedText);
+  }
+
+  function onScanFailure() {
+    // Fires continuously while no QR code is in frame; intentionally silent.
+  }
+
+  async function populateCameras() {
+    try {
+      const devices = await Html5Qrcode.getCameras();
+      cameraSelect.innerHTML = '';
+      if (!devices || devices.length === 0) {
+        cameraSelect.innerHTML = '<option value="">No cameras found</option>';
+        return;
+      }
+      devices.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.id;
+        opt.textContent = d.label || `Camera ${d.id}`;
+        cameraSelect.appendChild(opt);
+      });
+    } catch (err) {
+      cameraSelect.innerHTML = '<option value="">Camera access denied</option>';
+      statusText.textContent = 'Camera permission denied';
+    }
+  }
+
+  async function startScanning() {
+    const cameraId = cameraSelect.value;
+    if (!cameraId) return;
+
+    if (html5QrCode) {
+      try { await html5QrCode.stop(); } catch (e) { /* not running */ }
+    }
+
+    html5QrCode = new Html5Qrcode('reader');
+    try {
+      await html5QrCode.start(
+        cameraId,
+        { fps: 10, qrbox: { width: 260, height: 260 } },
+        onScanSuccess,
+        onScanFailure
+      );
+      statusDot.classList.add('live');
+      statusText.textContent = 'Camera live — scanning';
+    } catch (err) {
+      statusText.textContent = 'Failed to start camera';
+    }
+  }
+
+  async function stopScanning() {
+    if (html5QrCode) {
+      try {
+        await html5QrCode.stop();
+        html5QrCode.clear();
+      } catch (e) { /* already stopped */ }
+    }
+    statusDot.classList.remove('live');
+    statusText.textContent = 'Camera stopped';
+  }
+
+  startBtn.addEventListener('click', startScanning);
+  stopBtn.addEventListener('click', stopScanning);
+  cameraSelect.addEventListener('change', () => {
+    if (statusDot.classList.contains('live')) startScanning();
+  });
+
+  function downloadCsv() {
+    if (rows.length === 0) {
+      alert('No scanned rows to export yet.');
+      return;
+    }
+    const headerLine = DISPLAY_HEADERS.join(',');
+    const dataLines = rows.map(row =>
+      row.map(cell => {
+        // Quote any cell that contains a comma or quote to keep the CSV valid.
+        if (/[",]/.test(cell)) {
+          return `"${cell.replace(/"/g, '""')}"`;
+        }
+        return cell;
+      }).join(',')
+    );
+    const csvContent = [headerLine, ...dataLines].join('\r\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'scouting_data.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  downloadBtn.addEventListener('click', downloadCsv);
+
+  clearBtn.addEventListener('click', () => {
+    if (rows.length === 0) return;
+    const confirmed = confirm(`Clear all ${rows.length} scanned row(s)? This cannot be undone.`);
+    if (!confirmed) return;
+    rows.length = 0;
+    tableBody.innerHTML = '';
+    rowCountEl.textContent = '0';
+    emptyState.style.display = 'block';
+    lastPayload = null;
+    lastScanText.textContent = '—';
+  });
+
+  window.addEventListener('load', async () => {
+    await populateCameras();
+    if (cameraSelect.options.length && cameraSelect.value) {
+      startScanning();
+    }
+  });
+</script>
+
+</body>
+</html>
