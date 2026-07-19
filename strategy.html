@@ -275,6 +275,8 @@
 </head>
 <body>
 
+<div id="flashOverlay"></div>
+
 <header>
   <h1>REBUILT Strategy Dashboard</h1>
   <span class="sub">FRC Match Prep · Offline-First</span>
@@ -282,7 +284,6 @@
 
 <main>
 
-  <!-- ============ DATA INPUT TOP BAR ============ -->
   <section class="panel">
     <h2>Data Sources</h2>
     <div class="topbar">
@@ -309,18 +310,17 @@
         <label>AI Assistant</label>
         <div class="row">
           <select id="aiProvider" style="flex:1;">
+            <option value="groq">Groq Cloud (Llama 3)</option>
             <option value="openai">OpenAI (GPT)</option>
-            <option value="anthropic">Anthropic (Claude)</option>
           </select>
-          <input type="password" id="aiApiKey" placeholder="AI API Key" style="flex:1;">
+          <input type="password" id="aiApiKey" placeholder="Groq or OpenAI API Key" style="flex:1;">
         </div>
-        <span class="status-text">Key is only used client-side for the fetch call below — it is never stored or sent anywhere else.</span>
+        <span class="status-text">Groq Cloud features fast processing speeds and is ideal for live event client-side fetches.</span>
       </div>
 
     </div>
   </section>
 
-  <!-- ============ MATCH SELECTION ============ -->
   <section class="panel">
     <h2>Match Selection</h2>
     <div class="match-select">
@@ -333,7 +333,6 @@
     </div>
   </section>
 
-  <!-- ============ ALLIANCE LAYOUT ============ -->
   <section class="alliance-layout">
 
     <div class="alliance blue-side">
@@ -362,7 +361,6 @@
 
   </section>
 
-  <!-- ============ AI STRATEGY MATCHUP ============ -->
   <section class="panel ai-section">
     <h2>AI Strategy Matchup</h2>
     <div class="ai-controls">
@@ -375,33 +373,24 @@
 </main>
 
 <script>
-/* =========================================================================
-   GLOBAL STATE
-   ========================================================================= */
-let scoutingData = [];   // Array of row objects parsed from the uploaded CSV
-let scheduleData = null; // Array of TBA match objects (simple model)
-let lastComputedStats = { blue: [], red: [] }; // Cached stats for the AI prompt
+let scoutingData = [];   
+let scheduleData = null; 
+let lastComputedStats = { blue: [], red: [] }; 
 
 /* =========================================================================
-   1. CSV PARSING (Vanilla JS, RFC4180-style — handles quoted fields that
-      contain commas, since the Master Receiver quotes Notes fields that
-      have embedded commas).
+   1. CSV PARSING
    ========================================================================= */
 function parseCSV(text) {
   const rows = [];
   let row = [];
   let field = '';
   let inQuotes = false;
-
-  // Normalize line endings so \r\n and \n behave the same.
   const normalized = text.replace(/\r\n/g, '\n');
 
   for (let i = 0; i < normalized.length; i++) {
     const char = normalized[i];
-
     if (inQuotes) {
       if (char === '"') {
-        // A doubled quote inside a quoted field is an escaped literal quote.
         if (normalized[i + 1] === '"') {
           field += '"';
           i++;
@@ -427,18 +416,13 @@ function parseCSV(text) {
       }
     }
   }
-  // Flush the last field/row if the file doesn't end with a newline.
   if (field.length > 0 || row.length > 0) {
     row.push(field);
     rows.push(row);
   }
-
-  // Drop any fully empty trailing rows.
   return rows.filter(r => !(r.length === 1 && r[0].trim() === ''));
 }
 
-// Converts the raw row array (with a header row at index 0) into an array
-// of { HeaderName: value } objects, which is far easier to work with.
 function csvRowsToObjects(rows) {
   if (rows.length === 0) return [];
   const headers = rows[0].map(h => h.trim());
@@ -460,7 +444,6 @@ document.getElementById('csvFile').addEventListener('change', (e) => {
   reader.onload = (evt) => {
     const rows = parseCSV(evt.target.result);
     scoutingData = csvRowsToObjects(rows);
-
     const status = document.getElementById('csvStatus');
     if (scoutingData.length === 0) {
       status.textContent = 'CSV parsed but no data rows were found.';
@@ -470,18 +453,11 @@ document.getElementById('csvFile').addEventListener('change', (e) => {
       status.className = 'status-text ok';
     }
   };
-  reader.onerror = () => {
-    const status = document.getElementById('csvStatus');
-    status.textContent = 'Failed to read file.';
-    status.className = 'status-text err';
-  };
   reader.readAsText(file);
 });
 
 /* =========================================================================
    2. THE BLUE ALLIANCE (TBA) SCHEDULE FETCH
-      Saved to localStorage so the schedule survives a page reload / works
-      offline once it has been fetched at least once with internet access.
    ========================================================================= */
 async function fetchEventSchedule() {
   const apiKey = document.getElementById('tbaApiKey').value.trim();
@@ -493,7 +469,6 @@ async function fetchEventSchedule() {
     status.className = 'status-text err';
     return;
   }
-
   status.textContent = 'Fetching schedule…';
   status.className = 'status-text';
 
@@ -503,15 +478,11 @@ async function fetchEventSchedule() {
     });
     if (!res.ok) throw new Error(`TBA responded with ${res.status}`);
     const data = await res.json();
-
     scheduleData = data;
     localStorage.setItem('rebuilt_tba_schedule', JSON.stringify(data));
     localStorage.setItem('rebuilt_tba_event_key', eventKey);
-
     status.textContent = `Loaded ${data.length} matches for ${eventKey}. Saved for offline use.`;
     status.className = 'status-text ok';
-
-    // If a match number is already typed in, auto-populate right away.
     populateTeamsFromSchedule();
   } catch (err) {
     status.textContent = `Error fetching schedule: ${err.message}`;
@@ -520,8 +491,6 @@ async function fetchEventSchedule() {
 }
 document.getElementById('fetchScheduleBtn').addEventListener('click', fetchEventSchedule);
 
-// On page load, try to restore a previously fetched schedule from
-// localStorage so the dashboard is usable with zero connectivity.
 window.addEventListener('load', () => {
   const cached = localStorage.getItem('rebuilt_tba_schedule');
   const cachedEventKey = localStorage.getItem('rebuilt_tba_event_key');
@@ -529,29 +498,18 @@ window.addEventListener('load', () => {
     try {
       scheduleData = JSON.parse(cached);
       document.getElementById('tbaEventKey').value = cachedEventKey || '';
-      document.getElementById('tbaStatus').textContent =
-        `Restored cached schedule (${scheduleData.length} matches) from local storage.`;
+      document.getElementById('tbaStatus').textContent = `Restored cached schedule (${scheduleData.length} matches) from local storage.`;
       document.getElementById('tbaStatus').className = 'status-text ok';
-    } catch (e) { /* corrupted cache, ignore */ }
+    } catch (e) {}
   }
 });
 
-// Looks up the currently entered match number in the cached TBA schedule
-// (qualification matches) and fills in the 6 team number inputs.
 function populateTeamsFromSchedule() {
   const matchNumber = parseInt(document.getElementById('matchNumber').value, 10);
   const status = document.getElementById('tbaStatus');
 
-  if (!scheduleData) {
-    status.textContent = 'No schedule loaded yet — enter team numbers manually.';
-    status.className = 'status-text err';
-    return;
-  }
-  if (!matchNumber) {
-    status.textContent = 'Enter a match number first.';
-    status.className = 'status-text err';
-    return;
-  }
+  if (!scheduleData) return;
+  if (!matchNumber) return;
 
   const match = scheduleData.find(m => m.comp_level === 'qm' && m.match_number === matchNumber);
   if (!match) {
@@ -560,7 +518,6 @@ function populateTeamsFromSchedule() {
     return;
   }
 
-  // TBA team keys look like "frc254" — strip the "frc" prefix.
   const stripKey = (key) => key.replace('frc', '');
   const blueTeams = match.alliances.blue.team_keys.map(stripKey);
   const redTeams = match.alliances.red.team_keys.map(stripKey);
@@ -579,12 +536,7 @@ document.getElementById('loadMatchBtn').addEventListener('click', populateTeamsF
 
 /* =========================================================================
    3. STAT CALCULATIONS
-      All math is derived directly from the parsed scoutingData rows —
-      nothing here depends on TBA or AI being configured.
    ========================================================================= */
-
-// True/false flags in the CSV are stored as "1"/"0" strings by the
-// scouting app, but we also accept "true"/"false" defensively.
 function toBool(val) {
   return val === '1' || String(val).toLowerCase() === 'true';
 }
@@ -594,7 +546,6 @@ function mean(nums) {
   return nums.reduce((a, b) => a + b, 0) / nums.length;
 }
 
-// Returns the most frequently occurring non-empty value in an array.
 function mode(values) {
   const freq = {};
   let best = null;
@@ -610,7 +561,6 @@ function mode(values) {
   return best;
 }
 
-// Computes the full strategy-card stat set for a single team number.
 function computeTeamStats(teamNumber) {
   const teamStr = String(teamNumber).trim();
   const rows = scoutingData.filter(r => String(r.Team).trim() === teamStr);
@@ -619,20 +569,16 @@ function computeTeamStats(teamNumber) {
     return { teamNumber: teamStr, matches: 0 };
   }
 
-  // --- Reliability: % of matches where the robot broke down or beached ---
   const failureRows = rows.filter(r => toBool(r.BrokeDown) || toBool(r.Beached));
   const reliabilityFailPct = (failureRows.length / rows.length) * 100;
 
-  // --- Auto Playmaker ---
   const autoHighNums = rows.map(r => Number(r.AutoHigh) || 0);
   const avgAutoHigh = mean(autoHighNums);
   const maxAutoHigh = Math.max(...autoHighNums);
   const mostAutoStartPos = mode(rows.map(r => r.AutoStartPos));
 
-  // --- Teleop Flow ---
   const mostIntakeSource = mode(rows.map(r => r.IntakeSource));
 
-  // --- Defense Radar: only flagged if they played defense >25% of matches ---
   const defenseRows = rows.filter(r => r.DefRole && r.DefRole !== 'None' && r.DefRole === 'Played Defense');
   const defenseRate = (defenseRows.length / rows.length) * 100;
   const mostDefRole = mode(rows.map(r => r.DefRole));
@@ -660,35 +606,31 @@ function renderStrategyCard(stats) {
     return `
       <div class="strategy-card">
         <div class="team-number">${stats.teamNumber || '—'}</div>
-        <div class="no-data">No scouting data found for this team in the uploaded CSV.</div>
+        <div class="no-data">No data found.</div>
       </div>`;
   }
 
   const warningHtml = stats.reliabilityFailPct > 0
-    ? `<div class="warning-banner">⚠ RELIABILITY RISK — ${stats.reliabilityFailPct.toFixed(0)}% of matches had a breakdown or beaching event</div>`
+    ? `<div class="warning-banner">⚠ RELIABILITY RISK — ${stats.reliabilityFailPct.toFixed(0)}%</div>`
     : '';
 
   const defenseHtml = stats.defenseRate > 25
-    ? `<div class="defense-flag">Defense in ${stats.defenseRate.toFixed(0)}% of matches — ${stats.mostDefRole} (${stats.mostDefSev})</div>`
+    ? `<div class="defense-flag">Defense ${stats.defenseRate.toFixed(0)}% — ${stats.mostDefSev}</div>`
     : '';
 
   return `
     <div class="strategy-card">
       <div class="team-number">${stats.teamNumber}</div>
-      <div class="match-count">${stats.matches} scouted match${stats.matches === 1 ? '' : 'es'}</div>
-
+      <div class="match-count">${stats.matches} matches</div>
       ${warningHtml}
-
       <div class="stat-block">
         <div class="stat-label">Auto Playmaker</div>
-        <div class="stat-value">Start: ${stats.mostAutoStartPos} · Avg High: ${stats.avgAutoHigh.toFixed(1)} · Max High: ${stats.maxAutoHigh}</div>
+        <div class="stat-value">Start: ${stats.mostAutoStartPos} · Avg: ${stats.avgAutoHigh.toFixed(1)}</div>
       </div>
-
       <div class="stat-block">
         <div class="stat-label">Teleop Flow</div>
-        <div class="stat-value">Primary Intake: ${stats.mostIntakeSource}</div>
+        <div class="stat-value">Intake: ${stats.mostIntakeSource}</div>
       </div>
-
       ${defenseHtml}
     </div>`;
 }
@@ -705,36 +647,16 @@ function buildStrategyCards() {
 
   lastComputedStats = { blue: blueStats, red: redStats };
 
-  const blueContainer = document.getElementById('blueCards');
-  const redContainer = document.getElementById('redCards');
-
-  blueContainer.innerHTML = blueStats.length
-    ? blueStats.map(renderStrategyCard).join('')
-    : '<div class="no-data">Enter Blue Alliance team numbers above.</div>';
-
-  redContainer.innerHTML = redStats.length
-    ? redStats.map(renderStrategyCard).join('')
-    : '<div class="no-data">Enter Red Alliance team numbers above.</div>';
+  document.getElementById('blueCards').innerHTML = blueStats.length ? blueStats.map(renderStrategyCard).join('') : '';
+  document.getElementById('redCards').innerHTML = redStats.length ? redStats.map(renderStrategyCard).join('') : '';
 }
 document.getElementById('buildCardsBtn').addEventListener('click', buildStrategyCards);
 
 /* =========================================================================
-   5. AI STRATEGY MATCHUP
-      Compiles the already-computed stats into a plain-text prompt and
-      calls either OpenAI's Chat Completions API or Anthropic's Messages
-      API directly from the browser, based on the dropdown selection.
-
-      NOTE: Calling these APIs directly from client-side JS means the API
-      key is visible in the browser (devtools/network tab) for the person
-      using the page. That's an accepted tradeoff for a single-file, no-
-      backend tool — don't share a page with your key already filled in,
-      and be aware some providers (Anthropic especially) may block or
-      require special headers for direct browser calls due to CORS.
+   5. AI STRATEGY MATCHUP (UPDATED FOR GROQ CLOUD)
    ========================================================================= */
 function statsToPromptLines(stats) {
-  if (stats.matches === 0) {
-    return `Team ${stats.teamNumber}: No scouting data available.`;
-  }
+  if (stats.matches === 0) return `Team ${stats.teamNumber}: No scouting data available.`;
   return `Team ${stats.teamNumber} (${stats.matches} matches): ` +
     `Auto start ${stats.mostAutoStartPos}, avg auto high ${stats.avgAutoHigh.toFixed(1)} (max ${stats.maxAutoHigh}), ` +
     `primary intake ${stats.mostIntakeSource}, ` +
@@ -761,6 +683,31 @@ Based purely on these stats, respond with exactly two sections:
 Keep each bullet to one sentence. Do not restate the raw stats, just the strategic takeaway.`;
 }
 
+async function callGroq(apiKey, prompt) {
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: 'llama3-8b-8192', // Uses the standard fast text model on Groq
+      messages: [
+        { role: 'system', content: 'You are a concise, tactical FRC drive coach.' },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.5,
+      max_tokens: 500
+    })
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Groq API error: ${errText || res.status}`);
+  }
+  const data = await res.json();
+  return data.choices[0].message.content;
+}
+
 async function callOpenAI(apiKey, prompt) {
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -782,28 +729,6 @@ async function callOpenAI(apiKey, prompt) {
   return data.choices[0].message.content;
 }
 
-async function callAnthropic(apiKey, prompt) {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      // Required for direct browser calls to Anthropic's API; the account
-      // must have this enabled, and CORS restrictions may still apply.
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-5',
-      max_tokens: 600,
-      messages: [{ role: 'user', content: prompt }]
-    })
-  });
-  if (!res.ok) throw new Error(`Anthropic API error ${res.status}`);
-  const data = await res.json();
-  return data.content[0].text;
-}
-
 async function generateAIStrategy() {
   const provider = document.getElementById('aiProvider').value;
   const apiKey = document.getElementById('aiApiKey').value.trim();
@@ -822,22 +747,19 @@ async function generateAIStrategy() {
   }
 
   const prompt = buildMatchupPrompt();
-  outputEl.textContent = 'Generating strategy…';
+  outputEl.textContent = 'Generating strategy via AI…';
   outputEl.className = 'ai-output';
   statusEl.textContent = '';
 
   try {
-    const responseText = provider === 'openai'
-      ? await callOpenAI(apiKey, prompt)
-      : await callAnthropic(apiKey, prompt);
+    const responseText = provider === 'groq'
+      ? await callGroq(apiKey, prompt)
+      : await callOpenAI(apiKey, prompt);
 
     outputEl.textContent = responseText;
     outputEl.className = 'ai-output';
   } catch (err) {
-    outputEl.textContent =
-      `Error generating strategy: ${err.message}\n\n` +
-      `If this is a CORS/network error, the provider may be blocking direct browser calls — ` +
-      `this typically requires a small server-side proxy to work reliably from GitHub Pages.`;
+    outputEl.textContent = `Error generating strategy: ${err.message}`;
     outputEl.className = 'ai-output';
   }
 }
