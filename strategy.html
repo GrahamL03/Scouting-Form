@@ -691,7 +691,7 @@ async function callGroq(apiKey, prompt) {
       'Authorization': `Bearer ${apiKey}`
     },
     body: JSON.stringify({
-      model: 'llama3-8b-8192', // Uses the standard fast text model on Groq
+      model: 'openai/gpt-oss-20b', // Updated to an active, lightning-fast Groq model
       messages: [
         { role: 'system', content: 'You are a concise, tactical FRC drive coach.' },
         { role: 'user', content: prompt }
