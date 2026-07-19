@@ -331,13 +331,11 @@
 </main>
 
 <script>
-  // Expected CSV field order produced by the REBUILT scouting app.
-  // If a scanned row has a different field count, extra fields are folded
-  // into the final (Notes) column and missing fields are left blank.
+  // UPDATED: Matches the new 18-field index layout perfectly
   const EXPECTED_HEADERS = [
-    'Match', 'Team', 'Scout', 'Taxi', 'AutoHigh', 'AutoLow',
-    'TeleHigh', 'TeleLow', 'DefRole', 'DefSev', 'BrokeDown', 'Beached',
-    'Climb', 'Notes'
+    'Match', 'Team', 'Scout', 'AutoStartPos', 'AutoTaxi', 'AutoHigh', 'AutoLow',
+    'TeleHigh', 'TeleLow', 'IntakeSource', 'DefRole', 'DefSev', 'BrokeDown', 'Beached',
+    'Penalties', 'ClimbLevel', 'ClimbSpeed', 'Notes'
   ];
   const DISPLAY_HEADERS = ['Timestamp', ...EXPECTED_HEADERS];
 
@@ -380,7 +378,7 @@
       osc.stop(ctx.currentTime + 0.2);
       osc.onended = () => ctx.close();
     } catch (e) {
-      // Audio not available; visual flash still signals success.
+      // Audio fallback
     }
   }
 
@@ -424,8 +422,6 @@
 
   function onScanSuccess(decodedText) {
     const now = Date.now();
-    // Ignore duplicate reads of the same code within 3 seconds so a single
-    // physical scan doesn't get logged multiple times while held in frame.
     if (decodedText === lastPayload && (now - lastScanTime) < 3000) return;
     lastPayload = decodedText;
     lastScanTime = now;
@@ -436,9 +432,7 @@
     addRow(decodedText);
   }
 
-  function onScanFailure() {
-    // Fires continuously while no QR code is in frame; intentionally silent.
-  }
+  function onScanFailure() {}
 
   async function populateCameras() {
     try {
@@ -465,7 +459,7 @@
     if (!cameraId) return;
 
     if (html5QrCode) {
-      try { await html5QrCode.stop(); } catch (e) { /* not running */ }
+      try { await html5QrCode.stop(); } catch (e) {}
     }
 
     html5QrCode = new Html5Qrcode('reader');
@@ -488,7 +482,7 @@
       try {
         await html5QrCode.stop();
         html5QrCode.clear();
-      } catch (e) { /* already stopped */ }
+      } catch (e) {}
     }
     statusDot.classList.remove('live');
     statusText.textContent = 'Camera stopped';
@@ -508,7 +502,6 @@
     const headerLine = DISPLAY_HEADERS.join(',');
     const dataLines = rows.map(row =>
       row.map(cell => {
-        // Quote any cell that contains a comma or quote to keep the CSV valid.
         if (/[",]/.test(cell)) {
           return `"${cell.replace(/"/g, '""')}"`;
         }
