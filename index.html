@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>REBUILT Scout</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   :root {
     --bg: #121212;
@@ -104,7 +105,6 @@
   select,
   textarea {
     width: 100%;
-    background: #0000;
     background-color: #161616;
     border: 1px solid var(--border);
     color: var(--text);
@@ -203,16 +203,8 @@
 
   .toggle-row:last-child { margin-bottom: 0; }
 
-  .toggle-row .toggle-label {
-    font-size: 15px;
-    font-weight: 600;
-  }
-
-  .toggle-row .toggle-sub {
-    font-size: 12px;
-    color: var(--text-dim);
-    margin-top: 2px;
-  }
+  .toggle-row .toggle-label { font-size: 15px; font-weight: 600; }
+  .toggle-row .toggle-sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
 
   .switch {
     position: relative;
@@ -222,11 +214,7 @@
     margin-left: 12px;
   }
 
-  .switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
+  .switch input { opacity: 0; width: 0; height: 0; }
 
   .switch .slider {
     position: absolute;
@@ -249,22 +237,40 @@
     transition: transform 0.2s ease;
   }
 
-  .switch input:checked + .slider {
-    background: var(--accent);
-  }
-
-  .switch input:checked + .slider::before {
-    transform: translateX(24px);
-  }
-
-  .switch input:focus-visible + .slider {
-    outline: 2px solid var(--accent-hover);
-    outline-offset: 2px;
-  }
+  .switch input:checked + .slider { background: var(--accent); }
+  .switch input:checked + .slider::before { transform: translateX(24px); }
+  .switch input:focus-visible + .slider { outline: 2px solid var(--accent-hover); outline-offset: 2px; }
 
   /* Danger toggle variant (failure states) */
-  .switch.danger input:checked + .slider {
-    background: var(--red);
+  .switch.danger input:checked + .slider { background: var(--red); }
+
+  /* Segmented control (radio group styled as buttons) */
+  .segmented {
+    display: grid;
+    grid-template-columns: repeat(var(--cols, 4), 1fr);
+    gap: 8px;
+  }
+
+  .segmented input { position: absolute; opacity: 0; pointer-events: none; }
+
+  .segmented label {
+    margin: 0;
+    background: var(--card-raised);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 6px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .segmented input:checked + label {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
   }
 
   .actions {
@@ -290,10 +296,7 @@
 
   button.big:active { transform: scale(0.98); }
 
-  #generateBtn {
-    background: var(--accent);
-    color: #fff;
-  }
+  #generateBtn { background: var(--accent); color: #fff; }
   #generateBtn:hover { background: var(--accent-hover); }
 
   #clearBtn {
@@ -303,10 +306,7 @@
   }
   #clearBtn:hover { background: rgba(214,72,60,0.12); }
 
-  #qrSection {
-    text-align: center;
-    display: none;
-  }
+  #qrSection { text-align: center; display: none; }
   #qrSection.visible { display: block; }
 
   #qrcode {
@@ -342,11 +342,12 @@
 
 <header>
   <div class="eyebrow">FRC · Match Scouting</div>
-  <h1>REBUILT</h1>
+  <h1>REBUILT Scout</h1>
 </header>
 
 <main>
 
+  <!-- 1. Match Info -->
   <section class="card">
     <h2>Match Info</h2>
     <div class="field">
@@ -365,8 +366,17 @@
     </div>
   </section>
 
+  <!-- 2. Autonomous -->
   <section class="card">
     <h2>Autonomous</h2>
+    <div class="field">
+      <label for="startPos">Starting Position</label>
+      <select id="startPos">
+        <option value="Left">Left</option>
+        <option value="Center">Center</option>
+        <option value="Right">Right</option>
+      </select>
+    </div>
     <div class="toggle-row">
       <div>
         <div class="toggle-label">Taxi</div>
@@ -379,7 +389,7 @@
     </div>
     <div class="grid-2" style="margin-top:14px;">
       <div class="counter-group">
-        <div class="field-label">Fuel High</div>
+        <div class="field-label">Auto High</div>
         <div class="stepper">
           <button class="minus" data-target="autoHigh" data-delta="-1">−</button>
           <span class="count" id="autoHigh">0</span>
@@ -387,7 +397,7 @@
         </div>
       </div>
       <div class="counter-group">
-        <div class="field-label">Fuel Low</div>
+        <div class="field-label">Auto Low</div>
         <div class="stepper">
           <button class="minus" data-target="autoLow" data-delta="-1">−</button>
           <span class="count" id="autoLow">0</span>
@@ -397,11 +407,12 @@
     </div>
   </section>
 
+  <!-- 3. Teleop -->
   <section class="card">
     <h2>Teleop</h2>
     <div class="grid-2" style="margin-bottom:16px;">
       <div class="counter-group">
-        <div class="field-label">Fuel High</div>
+        <div class="field-label">Teleop High</div>
         <div class="stepper">
           <button class="minus" data-target="teleHigh" data-delta="-1">−</button>
           <span class="count" id="teleHigh">0</span>
@@ -409,7 +420,7 @@
         </div>
       </div>
       <div class="counter-group">
-        <div class="field-label">Fuel Low</div>
+        <div class="field-label">Teleop Low</div>
         <div class="stepper">
           <button class="minus" data-target="teleLow" data-delta="-1">−</button>
           <span class="count" id="teleLow">0</span>
@@ -417,6 +428,21 @@
         </div>
       </div>
     </div>
+
+    <div class="field">
+      <label>Intake Source</label>
+      <div class="segmented" style="--cols:4;">
+        <input type="radio" name="intakeSource" id="intakeFloor" value="Floor" checked>
+        <label for="intakeFloor">Floor</label>
+        <input type="radio" name="intakeSource" id="intakeSource2" value="Source/Chute">
+        <label for="intakeSource2">Source</label>
+        <input type="radio" name="intakeSource" id="intakeBoth" value="Both">
+        <label for="intakeBoth">Both</label>
+        <input type="radio" name="intakeSource" id="intakeNone" value="None">
+        <label for="intakeNone">None</label>
+      </div>
+    </div>
+
     <div class="field">
       <label for="defRole">Defensive Role</label>
       <select id="defRole">
@@ -435,12 +461,13 @@
     </div>
   </section>
 
+  <!-- 4. Failure & Performance States -->
   <section class="card">
     <h2>Failure &amp; Performance States</h2>
     <div class="toggle-row">
       <div>
         <div class="toggle-label">Broke Down</div>
-        <div class="toggle-sub">Completely dead on field</div>
+        <div class="toggle-sub">Completely dead or lost comms</div>
       </div>
       <label class="switch danger">
         <input type="checkbox" id="brokeDown">
@@ -449,34 +476,53 @@
     </div>
     <div class="toggle-row">
       <div>
-        <div class="toggle-label">Beached on Fuel</div>
-        <div class="toggle-sub">High-centered on game pieces</div>
+        <div class="toggle-label">Beached</div>
+        <div class="toggle-sub">Stuck on game pieces/field elements</div>
       </div>
       <label class="switch danger">
         <input type="checkbox" id="beached">
         <span class="slider"></span>
       </label>
     </div>
+    <div class="field" style="margin-top:14px;">
+      <label for="penaltyState">Clean Play / Penalties</label>
+      <select id="penaltyState">
+        <option value="Clean Match">Clean Match</option>
+        <option value="Minor Fouls">Minor Fouls</option>
+        <option value="Major/Carded">Major/Carded</option>
+      </select>
+    </div>
   </section>
 
+  <!-- 5. Endgame -->
   <section class="card">
     <h2>Endgame</h2>
     <div class="field">
-      <label for="climbed">Climbed</label>
-      <select id="climbed">
+      <label for="climbLevel">Climb Level</label>
+      <select id="climbLevel">
         <option value="None">None</option>
         <option value="Level 1">Level 1</option>
         <option value="Level 2">Level 2</option>
         <option value="Level 3">Level 3</option>
       </select>
     </div>
+    <div class="field">
+      <label for="climbSpeed">Climb Speed</label>
+      <select id="climbSpeed">
+        <option value="N/A">N/A</option>
+        <option value="Fast (<5s)">Fast (&lt;5s)</option>
+        <option value="Medium (5-15s)">Medium (5-15s)</option>
+        <option value="Slow (>15s)">Slow (&gt;15s)</option>
+      </select>
+    </div>
   </section>
 
+  <!-- 6. Qualitative -->
   <section class="card">
     <h2>Qualitative</h2>
     <div class="field">
       <label for="notes">Strategy Notes</label>
-      <textarea id="notes" placeholder="Robot tendencies, penalties, strategy fit, etc."></textarea>
+      <textarea id="notes" placeholder="Driver skill, defensive style, cycle pathing, etc."></textarea>
     </div>
   </section>
 
@@ -499,4 +545,121 @@
 </main>
 
 <script>
-var QRCode;!function(){function a(a{this.mode=c.MODE_8BIT_BYTE,this.data=a,this.parsedData=[];for(var b=[],d=0,e=this.data.length;e>d;d++){var f=this.data.charCodeAt(d);f>65536?(b[0]=240|f>>>18&7,b[1]=128|f>>>12&63,b[2]=128|f>>>6&63,b[3]=128|63&f):f>2048?(b[0]=224|f>>>12&15,b[1]=128|f>>>6&63,b[2]=128|63&f):f>128?(b[0]=192|f>>>6&31,b[1]=128|63&f):b[0]=f,this.parsedData=this.parsedData.concat(b)}this.parsedData.length!=this.data.length&&(this.parsedData.push(0),this.parsedData.unshift(239),this.parsedData.unshift(187),this.parsedData.unshift(191))}function b(a,b){this.typeNumber=a,this.errorCorrectLevel=b,this.modules=null,this.moduleCount=0,this.dataCache=null,this.dataList=[]}a.prototype={getLength:function(){return this.parsedData.length},write:function(a){for(var b=0,c=this.parsedData.length;c>b;b++)a.put(this.parsedData[b],8)}},b.prototype={addData:function(b){var c=new a(b);this.dataList.push(c),this.dataCache=null},isDark:function(a,b){if(0>a||this.moduleCount<=a||0>b||this.moduleCount<=b)throw new Error(a+","+b);return this.modules[a][b]},getModuleCount:function(){return this.moduleCount},make:function(){this.makeImpl(!1,this.getBestMaskPattern())},makeImpl:function(a,c){this.moduleCount=4*this.typeNumber+17,this.modules=new Array(this.moduleCount);for(var d=0;d<this.moduleCount;d++){this.modules[d]=new Array(this.moduleCount);for(var e=0;e<this.moduleCount;e++)this.modules[d][e]=null}this.setupPositionProbe
+  const counts = { autoHigh: 0, autoLow: 0, teleHigh: 0, teleLow: 0 };
+
+  document.querySelectorAll('.stepper button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.target;
+      const delta = parseInt(btn.dataset.delta, 10);
+      // Never allow a counter to drop below zero.
+      counts[key] = Math.max(0, counts[key] + delta);
+      document.getElementById(key).textContent = counts[key];
+    });
+  });
+
+  function boolToFlag(id) {
+    return document.getElementById(id).checked ? 1 : 0;
+  }
+
+  function getRadioValue(name) {
+    const checked = document.querySelector(`input[name="${name}"]:checked`);
+    return checked ? checked.value : '';
+  }
+
+  // Exact order required:
+  // MatchNumber, TeamNumber, ScoutName, AutoStartingPos, AutoTaxi, AutoHigh,
+  // AutoLow, TeleopHigh, TeleopLow, IntakeSource, DefRole, DefSev, BrokeDown,
+  // Beached, PenaltyState, ClimbLevel, ClimbSpeed, StrategyNotes
+  function buildCsvRow() {
+    const matchNumber = document.getElementById('matchNumber').value.trim();
+    const teamNumber = document.getElementById('teamNumber').value.trim();
+    // Free-text fields are sanitized so they can never shift the fixed
+    // column order that comes after them.
+    const scoutName = document.getElementById('scoutName').value.trim().replace(/[,\n\r]/g, ' ');
+    const autoStartingPos = document.getElementById('startPos').value;
+    const autoTaxi = boolToFlag('taxi');
+    const intakeSource = getRadioValue('intakeSource');
+    const defRole = document.getElementById('defRole').value;
+    const defSev = document.getElementById('defSev').value;
+    const brokeDown = boolToFlag('brokeDown');
+    const beached = boolToFlag('beached');
+    const penaltyState = document.getElementById('penaltyState').value;
+    const climbLevel = document.getElementById('climbLevel').value;
+    const climbSpeed = document.getElementById('climbSpeed').value;
+    const strategyNotes = document.getElementById('notes').value.trim().replace(/[,\n\r]/g, ' ');
+
+    const fields = [
+      matchNumber,
+      teamNumber,
+      scoutName,
+      autoStartingPos,
+      autoTaxi,
+      counts.autoHigh,
+      counts.autoLow,
+      counts.teleHigh,
+      counts.teleLow,
+      intakeSource,
+      defRole,
+      defSev,
+      brokeDown,
+      beached,
+      penaltyState,
+      climbLevel,
+      climbSpeed,
+      strategyNotes
+    ];
+
+    return fields.join(',');
+  }
+
+  document.getElementById('generateBtn').addEventListener('click', () => {
+    const csv = buildCsvRow();
+
+    const qrContainer = document.getElementById('qrcode');
+    qrContainer.innerHTML = '';
+    new QRCode(qrContainer, {
+      text: csv,
+      width: 220,
+      height: 220,
+      colorDark: '#121212',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
+    document.getElementById('csvPreview').textContent = csv;
+    const qrSection = document.getElementById('qrSection');
+    qrSection.classList.add('visible');
+    qrSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  document.getElementById('clearBtn').addEventListener('click', () => {
+    // Scout Name is intentionally preserved between matches.
+    document.getElementById('matchNumber').value = '';
+    document.getElementById('teamNumber').value = '';
+    document.getElementById('startPos').value = 'Left';
+    document.getElementById('taxi').checked = false;
+    document.getElementById('intakeFloor').checked = true;
+    document.getElementById('defRole').value = 'None';
+    document.getElementById('defSev').value = 'N/A';
+    document.getElementById('brokeDown').checked = false;
+    document.getElementById('beached').checked = false;
+    document.getElementById('penaltyState').value = 'Clean Match';
+    document.getElementById('climbLevel').value = 'None';
+    document.getElementById('climbSpeed').value = 'N/A';
+    document.getElementById('notes').value = '';
+
+    Object.keys(counts).forEach(key => {
+      counts[key] = 0;
+      document.getElementById(key).textContent = 0;
+    });
+
+    document.getElementById('qrSection').classList.remove('visible');
+    document.getElementById('qrcode').innerHTML = '';
+    document.getElementById('csvPreview').textContent = '';
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+</script>
+
+</body>
+</html>
