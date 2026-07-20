@@ -958,11 +958,16 @@ async function generateAIStrategy() {
     return;
   }
 
+<<<<<<< HEAD
+=======
+  const prompt = buildMatchupPrompt();
+>>>>>>> 3f4c6861ac5182c1685a6c292b104ee48ccf503f
   outputEl.textContent = 'Generating strategy…';
   outputEl.className = 'ai-output';
   statusEl.textContent = '';
 
   try {
+<<<<<<< HEAD
     // 1. Fetch historical data from your local RAG server backend
     const { blue: blueTeams, red: redTeams } = getSelectedTeams();
     let ragContextText = "";
@@ -991,10 +996,16 @@ async function generateAIStrategy() {
     const responseText = provider === 'groq'
       ? await callOpenAICompatible('https://api.groq.com/openai/v1/chat/completions', apiKey, 'llama-3.1-8b-instant', finalPrompt)
       : await callOpenAICompatible('https://api.openai.com/v1/chat/completions', apiKey, 'gpt-4o-mini', finalPrompt);
+=======
+    const responseText = provider === 'groq'
+      ? await callOpenAICompatible('https://api.groq.com/openai/v1/chat/completions', apiKey, 'llama-3.1-8b-instant', prompt)
+      : await callOpenAICompatible('https://api.openai.com/v1/chat/completions', apiKey, 'gpt-4o-mini', prompt);
+>>>>>>> 3f4c6861ac5182c1685a6c292b104ee48ccf503f
 
     outputEl.textContent = responseText;
     outputEl.className = 'ai-output';
   } catch (err) {
+<<<<<<< HEAD
     outputEl.textContent =
       `Error generating strategy: ${err.message}\n\n` +
       `If this is a CORS/network error, the provider may be blocking direct browser calls — ` +
@@ -1003,6 +1014,15 @@ async function generateAIStrategy() {
 }
 /* =========================================================================
   8. TAB 2 — FIELD PLAYBOOK
+=======
+    outputEl.textContent = `Error generating strategy: ${err.message}\n\nIf this is a CORS network issue, access restrictions may apply directly inside browser clients.`;
+  }
+}
+document.getElementById('generateAIBtn').addEventListener('click', generateAIStrategy);
+
+/* =========================================================================
+   8. TAB 2 — FIELD PLAYBOOK
+>>>>>>> 3f4c6861ac5182c1685a6c292b104ee48ccf503f
    ========================================================================= */
 const canvas = document.getElementById('fieldCanvas');
 const ctx = canvas.getContext('2d');
@@ -1217,4 +1237,8 @@ document.getElementById('teamFilter').addEventListener('input', (e) => {
 </script>
 
 </body>
+<<<<<<< HEAD
 </html>
+=======
+</html>
+>>>>>>> 3f4c6861ac5182c1685a6c292b104ee48ccf503f
