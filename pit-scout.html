@@ -3,21 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>REBUILT Pit Scout</title>
+<title>ShamStrat | Pit Scout</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   :root {
-    --bg: #121212;
-    --card: #1E1E1E;
-    --card-raised: #262626;
-    --text: #FFFFFF;
-    --text-dim: #A0A0A0;
-    --accent: #004F9E;
-    --accent-hover: #0064C9;
-    --border: #303030;
-    --green: #2FA86B;
-    --red: #D6483C;
-    --radius: 14px;
+    /* ShamStrat "End Game" Theme Palette */
+    --bg: #18181B;
+    --card: #27272A;
+    --card-raised: #3F3F46;
+    --text: #F4F4F5;
+    --text-dim: #A1A1AA;
+    --accent: #6366F1;
+    --accent-hover: #4F46E5;
+    --accent-secondary: #3B82F6;
+    --border: #3F3F46;
+    --green: #10B981;
+    --red: #EF4444;
+    --radius: 12px;
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -26,13 +28,13 @@
     margin: 0;
     background: var(--bg);
     color: var(--text);
-    font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+    font-family: system-ui, -apple-system, Roboto, sans-serif;
     padding-bottom: 40px;
     min-height: 100vh;
   }
 
   header {
-    padding: 20px 16px;
+    padding: 16px 20px;
     background: var(--card);
     border-bottom: 3px solid var(--accent);
     position: sticky;
@@ -41,17 +43,17 @@
   }
 
   header .eyebrow {
-    font-size: 12px;
-    letter-spacing: 3px;
-    color: var(--accent-hover);
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--accent-secondary);
     font-weight: 700;
     text-transform: uppercase;
   }
 
-  header h1 { margin: 4px 0 0; font-size: 26px; }
+  header h1 { margin: 2px 0 0; font-size: 22px; }
 
   main {
-    max-width: 560px;
+    max-width: 580px;
     margin: 0 auto;
     padding: 18px 14px 0;
     display: flex;
@@ -68,8 +70,8 @@
 
   section.card h2 {
     margin: 0 0 14px;
-    font-size: 13px;
-    letter-spacing: 2.5px;
+    font-size: 12px;
+    letter-spacing: 2px;
     text-transform: uppercase;
     color: var(--text-dim);
     display: flex;
@@ -91,10 +93,12 @@
 
   label {
     display: block;
-    font-size: 13px;
+    font-size: 12px;
     color: var(--text-dim);
     margin-bottom: 6px;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   input[type="text"],
@@ -102,12 +106,12 @@
   select,
   textarea {
     width: 100%;
-    background-color: #161616;
+    background-color: var(--bg);
     border: 1px solid var(--border);
     color: var(--text);
-    border-radius: 10px;
-    padding: 14px 12px;
-    font-size: 17px;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 16px;
     font-family: inherit;
     -webkit-appearance: none;
     appearance: none;
@@ -118,10 +122,10 @@
     outline-offset: 1px;
   }
 
-  textarea { resize: vertical; min-height: 90px; }
+  textarea { resize: vertical; min-height: 80px; }
 
   select {
-    background-image: linear-gradient(45deg, transparent 50%, var(--accent-hover) 50%), linear-gradient(135deg, var(--accent-hover) 50%, transparent 50%);
+    background-image: linear-gradient(45deg, transparent 50%, var(--text-dim) 50%), linear-gradient(135deg, var(--text-dim) 50%, transparent 50%);
     background-position: calc(100% - 20px) 50%, calc(100% - 14px) 50%;
     background-size: 6px 6px, 6px 6px;
     background-repeat: no-repeat;
@@ -130,18 +134,29 @@
   .grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 14px;
+    gap: 12px;
   }
 
-  /* Image Preview Box */
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+
+  /* Photo Upload Box */
   .photo-upload-box {
     border: 2px dashed var(--border);
-    border-radius: 12px;
-    padding: 16px;
+    border-radius: 10px;
+    padding: 20px 16px;
     text-align: center;
-    background: #161616;
+    background: var(--bg);
     cursor: pointer;
     position: relative;
+    transition: border-color 0.2s ease;
+  }
+
+  .photo-upload-box:hover {
+    border-color: var(--accent);
   }
 
   .photo-upload-box input[type="file"] {
@@ -153,10 +168,11 @@
 
   #imagePreview {
     max-width: 100%;
-    max-height: 200px;
+    max-height: 220px;
     border-radius: 8px;
     display: none;
     margin: 10px auto 0;
+    border: 1px solid var(--border);
   }
 
   /* Segmented control */
@@ -170,12 +186,12 @@
 
   .segmented label {
     margin: 0;
-    background: var(--card-raised);
+    background: var(--bg);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 6px;
+    border-radius: 8px;
+    padding: 10px 4px;
     text-align: center;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     color: var(--text-dim);
     cursor: pointer;
@@ -191,17 +207,17 @@
   .actions {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     margin-top: 4px;
   }
 
   button.big {
     width: 100%;
-    padding: 18px;
-    font-size: 17px;
+    padding: 16px;
+    font-size: 15px;
     font-weight: 800;
     letter-spacing: 0.5px;
-    border-radius: 12px;
+    border-radius: 10px;
     border: none;
     cursor: pointer;
     text-transform: uppercase;
@@ -217,9 +233,9 @@
   #clearBtn {
     background: transparent;
     color: var(--red);
-    border: 1.5px solid var(--red);
+    border: 1px solid var(--red);
   }
-  #clearBtn:hover { background: rgba(214,72,60,0.12); }
+  #clearBtn:hover { background: rgba(239, 68, 68, 0.15); }
 
   #qrSection { text-align: center; display: none; }
   #qrSection.visible { display: block; }
@@ -228,17 +244,17 @@
     background: #fff;
     display: inline-block;
     padding: 14px;
-    border-radius: 12px;
+    border-radius: 10px;
     margin: 10px auto 14px;
   }
 
   #csvPreview {
-    font-family: 'Courier New', monospace;
-    font-size: 12px;
+    font-family: monospace;
+    font-size: 11px;
     color: var(--text-dim);
-    background: #161616;
+    background: var(--bg);
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 10px;
     word-break: break-all;
     text-align: left;
@@ -247,7 +263,7 @@
   footer {
     text-align: center;
     color: var(--text-dim);
-    font-size: 12px;
+    font-size: 11px;
     padding: 20px 0 0;
     letter-spacing: 1px;
   }
@@ -256,8 +272,8 @@
 <body>
 
 <header>
-  <div class="eyebrow">FRC · Pit Scouting</div>
-  <h1>REBUILT Pit Scout</h1>
+  <div class="eyebrow">SHAMSTRAT PIT HUB</div>
+  <h1>Pit Scouting Form</h1>
 </header>
 
 <main>
@@ -266,7 +282,7 @@
     <h2>Team Info</h2>
     <div class="grid-2">
       <div class="field">
-        <label for="teamNumber">Team Number</label>
+        <label for="teamNumber">Team Number *</label>
         <input type="number" id="teamNumber" inputmode="numeric" placeholder="e.g. 254">
       </div>
       <div class="field">
@@ -279,43 +295,69 @@
   <section class="card">
     <h2>Robot Photo</h2>
     <div class="photo-upload-box">
-      <span id="uploadPrompt" style="font-size: 14px; color: var(--text-dim);">📷 Tap to Take or Upload Photo</span>
+      <span id="uploadPrompt" style="font-size: 13px; color: var(--text-dim); font-weight: 600;">📷 Tap to Take or Upload Photo</span>
       <input type="file" id="robotPhoto" accept="image/*" capture="environment">
       <img id="imagePreview" alt="Robot Preview">
     </div>
   </section>
 
   <section class="card">
-    <h2>Drivebase &amp; Hardware</h2>
+    <h2>Drivebase & Hardware</h2>
+    
     <div class="field">
-      <label for="driveType">Drivetrain Type</label>
-      <select id="driveType">
-        <option value="Swerve (Kraken/Falcon)">Swerve (Kraken/Falcon)</option>
-        <option value="Swerve (NEO)">Swerve (NEO)</option>
+      <label for="driveModule">Swerve / Drivetrain Module</label>
+      <select id="driveModule">
+        <option value="SDS MK4i">SDS MK4i Swerve</option>
+        <option value="SDS MK4n">SDS MK4n Swerve</option>
+        <option value="SDS MK5n">SDS MK5n Swerve</option>
+        <option value="SDS MK4 / Legacy">SDS MK4 / Legacy Swerve</option>
+        <option value="WCP SwerveX / X2">WCP SwerveX / SwerveX2</option>
+        <option value="REV MAXSwerve">REV MAXSwerve</option>
+        <option value="Custom Swerve">Custom Swerve</option>
         <option value="Tank / West Coast">Tank / West Coast Drive</option>
-        <option value="Mecanum / Other">Mecanum / Other</option>
+        <option value="Mecanum / Omni / Other">Mecanum / Omni / Other</option>
       </select>
     </div>
 
     <div class="grid-2">
       <div class="field">
+        <label for="driveMotors">Drive Motors</label>
+        <select id="driveMotors">
+          <option value="Kraken X60">Kraken X60</option>
+          <option value="Falcon 500">Falcon 500</option>
+          <option value="NEO Vortex">NEO Vortex</option>
+          <option value="NEO v1.1">NEO v1.1</option>
+          <option value="Brushed / CIM / Other">Brushed / Other</option>
+        </select>
+      </div>
+      <div class="field">
         <label for="weight">Weight (lbs)</label>
         <input type="number" id="weight" inputmode="decimal" placeholder="e.g. 118">
       </div>
+    </div>
+
+    <label>Dimensions (Inches - Frame Only)</label>
+    <div class="grid-3">
       <div class="field">
-        <label for="dimensions">Size (W x L in)</label>
-        <input type="text" id="dimensions" placeholder="e.g. 28x30">
+        <input type="number" id="dimWidth" placeholder="Width">
+      </div>
+      <div class="field">
+        <input type="number" id="dimLength" placeholder="Length">
+      </div>
+      <div class="field">
+        <input type="number" id="dimHeight" placeholder="Height">
       </div>
     </div>
   </section>
 
   <section class="card">
-    <h2>Mechanisms &amp; Auto</h2>
+    <h2>Mechanisms & Software</h2>
+    
     <div class="field">
-      <label>Intake Mechanism</label>
+      <label>Intake Capability</label>
       <div class="segmented" style="--cols:3;">
-        <input type="radio" name="intakeType" id="intakeOverBumper" value="Ground/UTB" checked>
-        <label for="intakeOverBumper">Ground</label>
+        <input type="radio" name="intakeType" id="intakeGround" value="Ground" checked>
+        <label for="intakeGround">Ground</label>
         <input type="radio" name="intakeType" id="intakeSource" value="Source">
         <label for="intakeSource">Source</label>
         <input type="radio" name="intakeType" id="intakeBoth" value="Both">
@@ -323,31 +365,68 @@
       </div>
     </div>
 
+    <div class="grid-2">
+      <div class="field">
+        <label for="autoPaths">Auto Capability</label>
+        <select id="autoPaths">
+          <option value="Multi-Piece (Choreo/PP)">Multi-Piece (Choreo/PP)</option>
+          <option value="Simple 1-2 Piece">Simple 1-2 Piece</option>
+          <option value="Taxi Only">Taxi Only</option>
+          <option value="No Auto">No Auto</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="progLang">Language</label>
+        <select id="progLang">
+          <option value="Java">Java (WPILib)</option>
+          <option value="C++">C++</option>
+          <option value="Python">Python</option>
+          <option value="LabVIEW">LabVIEW</option>
+        </select>
+      </div>
+    </div>
+
     <div class="field">
-      <label for="autoPaths">Auto Pathing Capability</label>
-      <select id="autoPaths">
-        <option value="Multi-piece Choreo/PathPlanner">Multi-piece (Choreo/PathPlanner)</option>
-        <option value="Simple Single/Double Piece">Simple Single/Double Piece</option>
-        <option value="Taxi Only">Taxi Only</option>
-        <option value="No Reliable Auto">No Reliable Auto</option>
+      <label for="driverExp">Driver Experience Level</label>
+      <select id="driverExp">
+        <option value="Veteran (2+ Years)">Veteran (2+ Years)</option>
+        <option value="1 Year Experience">1 Year Experience</option>
+        <option value="Rookie Driver">Rookie Driver</option>
       </select>
     </div>
   </section>
 
   <section class="card">
-    <h2>Pit Observations</h2>
+    <h2>Quality & Pit Notes</h2>
+
     <div class="field">
-      <label for="pitNotes">Pit Scout Notes</label>
-      <textarea id="pitNotes" placeholder="Wiring quality, mechanical robustness, driver experience, special features, etc."></textarea>
+      <label>Wiring & Build Quality (1-5)</label>
+      <div class="segmented" style="--cols:5;">
+        <input type="radio" name="qualityRating" id="q1" value="1">
+        <label for="q1">1</label>
+        <input type="radio" name="qualityRating" id="q2" value="2">
+        <label for="q2">2</label>
+        <input type="radio" name="qualityRating" id="q3" value="3" checked>
+        <label for="q3">3</label>
+        <input type="radio" name="qualityRating" id="q4" value="4">
+        <label for="q4">4</label>
+        <input type="radio" name="qualityRating" id="q5" value="5">
+        <label for="q5">5</label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="pitNotes">Scout Observations</label>
+      <textarea id="pitNotes" placeholder="Mechanical stability, custom gearboxes, vision systems, driver confidence, special mechanisms..."></textarea>
     </div>
   </section>
 
   <div class="actions">
-    <button class="big" id="exportBtn">Export Pit Data &amp; QR</button>
+    <button class="big" id="exportBtn">Export Pit Data & QR</button>
   </div>
 
   <section class="card" id="qrSection">
-    <h2>Pit Summary QR</h2>
+    <h2>Pit Summary QR Code</h2>
     <div id="qrcode"></div>
     <div id="csvPreview"></div>
   </section>
@@ -387,14 +466,27 @@
   function buildPitCsvRow() {
     const teamNumber = document.getElementById('teamNumber').value.trim();
     const scoutName = document.getElementById('scoutName').value.trim().replace(/[,\n\r]/g, ' ');
-    const driveType = document.getElementById('driveType').value;
+    const driveModule = document.getElementById('driveModule').value;
+    const driveMotors = document.getElementById('driveMotors').value;
     const weight = document.getElementById('weight').value.trim();
-    const dimensions = document.getElementById('dimensions').value.trim().replace(/[,\n\r]/g, ' ');
+    
+    const w = document.getElementById('dimWidth').value.trim() || '0';
+    const l = document.getElementById('dimLength').value.trim() || '0';
+    const h = document.getElementById('dimHeight').value.trim() || '0';
+    const dimensions = `${w}x${l}x${h}`;
+
     const intakeType = getRadioValue('intakeType');
     const autoPaths = document.getElementById('autoPaths').value;
+    const progLang = document.getElementById('progLang').value;
+    const driverExp = document.getElementById('driverExp').value;
+    const qualityRating = getRadioValue('qualityRating');
     const pitNotes = document.getElementById('pitNotes').value.trim().replace(/[,\n\r]/g, ' ');
 
-    return [teamNumber, scoutName, driveType, weight, dimensions, intakeType, autoPaths, pitNotes].join(',');
+    return [
+      teamNumber, scoutName, driveModule, driveMotors, weight, 
+      dimensions, intakeType, autoPaths, progLang, driverExp, 
+      qualityRating, pitNotes
+    ].join(',');
   }
 
   document.getElementById('exportBtn').addEventListener('click', () => {
@@ -406,15 +498,15 @@
 
     const csvRow = buildPitCsvRow();
 
-    // 1. Generate QR Code for fast text-only scanning
+    // Generate QR Code
     const qrContainer = document.getElementById('qrcode');
     qrContainer.innerHTML = '';
     new QRCode(qrContainer, {
       text: csvRow,
       width: 220,
       height: 220,
-      colorDark: '#121212',
-      colorLight: '#ffffff',
+      colorDark: "#18181B",
+      colorLight: "#ffffff",
       correctLevel: QRCode.CorrectLevel.M
     });
 
@@ -423,7 +515,7 @@
     qrSection.classList.add('visible');
     qrSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    // 2. Download Photo as [TeamNumber].jpg directly into Downloads for easy USB drop
+    // Download Photo with Team Number filename
     if (currentPhotoFile) {
       const link = document.createElement('a');
       link.href = URL.createObjectURL(currentPhotoFile);
@@ -435,17 +527,21 @@
   document.getElementById('clearBtn').addEventListener('click', () => {
     document.getElementById('teamNumber').value = '';
     document.getElementById('weight').value = '';
-    document.getElementById('dimensions').value = '';
+    document.getElementById('dimWidth').value = '';
+    document.getElementById('dimLength').value = '';
+    document.getElementById('dimHeight').value = '';
     document.getElementById('pitNotes').value = '';
-    document.getElementById('driveType').value = 'Swerve (Kraken/Falcon)';
-    document.getElementById('intakeOverBumper').checked = true;
-    document.getElementById('autoPaths').value = 'Multi-piece Choreo/PathPlanner';
+    document.getElementById('driveModule').value = 'SDS MK4i';
+    document.getElementById('driveMotors').value = 'Kraken X60';
+    document.getElementById('intakeGround').checked = true;
+    document.getElementById('q3').checked = true;
+    document.getElementById('autoPaths').value = 'Multi-Piece (Choreo/PP)';
     
     // Clear Photo
     currentPhotoFile = null;
     document.getElementById('robotPhoto').value = '';
     document.getElementById('imagePreview').style.display = 'none';
-    document.getElementById('uploadPrompt').style.display = 'inline';
+    document.getElementById('uploadPrompt').style.display = 'inline-block';
 
     document.getElementById('qrSection').classList.remove('visible');
     document.getElementById('qrcode').innerHTML = '';
