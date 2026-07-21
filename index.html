@@ -154,37 +154,91 @@
     gap: 12px;
   }
 
-  .grid-3 {
+  /* Quick-Add Spots Grid */
+  .quick-add-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
   }
 
-  /* Checkbox Grid for Auto Path Spots */
-  .checkbox-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-
-  .checkbox-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  .spot-btn {
     background: var(--card-raised);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 10px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s ease;
+  }
+
+  .spot-btn:active {
+    background: var(--accent);
+    transform: scale(0.96);
+  }
+
+  /* Path Order List Display */
+  .sequence-container {
+    background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 10px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
+    min-height: 48px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
   }
 
-  .checkbox-item input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    accent-color: var(--accent);
+  .seq-badge {
+    background: var(--accent);
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .seq-badge .num {
+    background: rgba(0, 0, 0, 0.25);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 10px;
+  }
+
+  .seq-badge button {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-weight: 800;
     cursor: pointer;
+    padding: 0;
+    margin-left: 2px;
+  }
+
+  .seq-empty {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+
+  .clear-path-btn {
+    background: transparent;
+    border: 1px solid var(--red);
+    color: var(--red);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 6px;
+    float: right;
   }
 
   /* Stepper Counters */
@@ -433,40 +487,23 @@
     </div>
 
     <div class="field" style="margin-top: 14px;">
-      <label>Autonomous Field Spots (Where they go in Auto)</label>
-      <div class="checkbox-grid">
-        <label class="checkbox-item">
-          <input type="checkbox" class="auto-spot" value="Reef (Close)"> Reef (Close)
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" class="auto-spot" value="Reef (Far)"> Reef (Far)
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" class="auto-spot" value="Coral Station"> Coral Station
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" class="auto-spot" value="Processor Zone"> Processor Zone
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" class="auto-spot" value="Midfield Algae"> Midfield Algae
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" class="auto-spot" value="Barge Area"> Barge Area
-        </label>
+      <label>Autonomous Path Sequence (Tap locations in order)</label>
+      <div class="quick-add-grid">
+        <button type="button" class="spot-btn" onclick="addAutoSpot('Left Reef')">+ Left Reef</button>
+        <button type="button" class="spot-btn" onclick="addAutoSpot('Right Reef')">+ Right Reef</button>
+        <button type="button" class="spot-btn" onclick="addAutoSpot('Reef (Score)')">+ Reef (Score)</button>
+        <button type="button" class="spot-btn" onclick="addAutoSpot('Coral Station')">+ Coral Station</button>
+        <button type="button" class="spot-btn" onclick="addAutoSpot('Processor')">+ Processor</button>
+        <button type="button" class="spot-btn" onclick="addAutoSpot('Midfield Algae')">+ Midfield Algae</button>
+        <button type="button" class="spot-btn" onclick="addAutoSpot('Barge / Cage')">+ Barge / Cage</button>
+        <button type="button" class="spot-btn" onclick="addAutoSpot('Ground Intake')">+ Ground Intake</button>
       </div>
-    </div>
 
-    <div class="field" style="margin-top: 14px;">
-      <label>Autonomous Actions Summary</label>
-      <select id="autoActionSummary">
-        <option value="None/Stalled">None / Stalled</option>
-        <option value="Taxi Only">Taxi Only</option>
-        <option value="Score Coral L1-L2">Score Coral L1-L2</option>
-        <option value="Score Coral L3-L4">Score Coral L3-L4</option>
-        <option value="Remove/Score Algae">Remove / Score Algae</option>
-        <option value="Multi-Coral Cycle">Multi-Coral Cycle</option>
-        <option value="Coral + Algae Combo">Coral + Algae Combo</option>
-      </select>
+      <div class="sequence-container" id="sequenceDisplay">
+        <span class="seq-empty" id="seqEmptyText">No path recorded. Tap buttons above to build route.</span>
+      </div>
+      <button type="button" class="clear-path-btn" onclick="clearAutoPath()">Clear Route Order</button>
+      <div style="clear:both;"></div>
     </div>
 
     <div class="grid-2" style="margin-top:14px;">
@@ -676,6 +713,8 @@
 </main>
 
 <script>
+  let autoPathSequence = [];
+
   const counts = { 
     autoCoralLow: 0, 
     autoCoralHigh: 0, 
@@ -698,6 +737,37 @@
     });
   });
 
+  function addAutoSpot(spotName) {
+    autoPathSequence.push(spotName);
+    renderAutoPath();
+  }
+
+  function removeAutoSpot(index) {
+    autoPathSequence.splice(index, 1);
+    renderAutoPath();
+  }
+
+  function clearAutoPath() {
+    autoPathSequence = [];
+    renderAutoPath();
+  }
+
+  function renderAutoPath() {
+    const container = document.getElementById('sequenceDisplay');
+    if (autoPathSequence.length === 0) {
+      container.innerHTML = '<span class="seq-empty" id="seqEmptyText">No path recorded. Tap buttons above to build route.</span>';
+      return;
+    }
+
+    container.innerHTML = autoPathSequence.map((spot, idx) => `
+      <div class="seq-badge">
+        <span class="num">${idx + 1}</span>
+        <span>${spot}</span>
+        <button type="button" onclick="removeAutoSpot(${idx})">✕</button>
+      </div>
+    `).join('');
+  }
+
   function boolToFlag(id) {
     return document.getElementById(id).checked ? 1 : 0;
   }
@@ -705,11 +775,6 @@
   function getRadioValue(name) {
     const checked = document.querySelector(`input[name="${name}"]:checked`);
     return checked ? checked.value : '';
-  }
-
-  function getAutoSpots() {
-    const checkedSpots = Array.from(document.querySelectorAll('.auto-spot:checked')).map(cb => cb.value);
-    return checkedSpots.length > 0 ? checkedSpots.join(';') : 'None';
   }
 
   function buildCsvRow() {
@@ -720,8 +785,7 @@
     // Auto
     const autoStartingPos = document.getElementById('startPos').value;
     const autoTaxi = boolToFlag('autoTaxi');
-    const autoSpots = getAutoSpots().replace(/[,\n\r]/g, ' ');
-    const autoActionSummary = document.getElementById('autoActionSummary').value;
+    const autoPathStr = autoPathSequence.length > 0 ? autoPathSequence.join(' -> ') : 'None';
 
     // Teleop
     const intakeSource = getRadioValue('intakeSource');
@@ -745,8 +809,7 @@
       scoutName,
       autoStartingPos,
       autoTaxi,
-      autoSpots,
-      autoActionSummary,
+      autoPathStr,
       counts.autoCoralLow,
       counts.autoCoralHigh,
       counts.autoAlgaeRemoved,
@@ -796,8 +859,7 @@
     document.getElementById('startPos').value = 'Center Reef Side';
     document.getElementById('autoTaxi').checked = false;
     
-    document.querySelectorAll('.auto-spot').forEach(cb => cb.checked = false);
-    document.getElementById('autoActionSummary').value = 'None/Stalled';
+    clearAutoPath();
 
     document.getElementById('intakeCoralStation').checked = true;
     document.getElementById('defRole').value = 'None';
