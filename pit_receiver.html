@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShamStrat | Pit Receiver</title>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+  :root {
+    --bg: #18181B;
+    --card: #27272A;
+    --card-raised: #3F3F46;
+    --text: #F4F4F5;
+    --text-dim: #A1A1AA;
+    --accent: #6366F1;
+    --accent-hover: #4F46E5;
+    --accent-secondary: #3B82F6;
+    --border: #3F3F46;
+    --green: #10B981;
+    --red: #EF4444;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, Roboto, sans-serif;
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 16px 24px;
+    background: var(--card);
+    border-bottom: 3px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  header .title .eyebrow {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--accent-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  header .title h1 { margin: 2px 0 0; font-size: 22px; }
+
+  header .status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-dim);
+    font-weight: 600;
+    background: var(--bg);
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+
+  .status .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--red);
+    transition: background-color 0.2s ease;
+  }
+
+  .status .dot.live { background: var(--green); box-shadow: 0 0 8px var(--green); }
+
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  @media (max-width: 960px) {
+    main { grid-template-columns: 1fr; }
+  }
+
+  section.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+  }
+
+  section.card h2 {
+    margin: 0 0 14px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  section.card h2::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+    border-radius: 2px;
+    display: inline-block;
+  }
+
+  #cameraSelect {
+    width: 100%;
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 14px;
+    margin-bottom: 12px;
+    outline: none;
+  }
+
+  #reader {
+    width: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #000;
+    min-height: 250px;
+    border: 1px solid var(--border);
+  }
+
+  .scan-controls { display: flex; gap: 10px; margin-top: 12px; }
+
+  .last-scan {
+    margin-top: 16px;
+    background: var(--card-raised);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    word-break: break-all;
+    min-height: 40px;
+  }
+
+  .last-scan .label {
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent-secondary);
+    margin-bottom: 4px;
+    display: block;
+    font-weight: 700;
+  }
+
+  button.action {
+    padding: 11px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+    flex: 1;
+  }
+
+  button.action:active { transform: scale(0.97); }
+
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+
+  .btn-danger { background: transparent; color: var(--red); border: 1px solid var(--red); }
+  .btn-danger:hover { background: rgba(239, 68, 68, 0.15); }
+
+  .table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .table-toolbar .count-pill {
+    background: var(--card-raised);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dim);
+  }
+
+  .table-toolbar .count-pill strong { color: var(--accent-secondary); }
+
+  .table-toolbar .toolbar-buttons { display: flex; gap: 8px; }
+  .table-toolbar button.action { flex: none; padding: 10px 16px; }
+
+  .table-wrap {
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    max-height: 68vh;
+    background: var(--bg);
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--card-raised);
+    color: var(--text-dim);
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    z-index: 1;
+  }
+
+  tbody td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  tbody tr:hover { background: var(--card-raised); }
+  tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.02); }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+
+  #flashOverlay {
+    position: fixed;
+    inset: 0;
+    background: var(--green);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 999;
+    transition: opacity 0.15s ease;
+  }
+
+  #flashOverlay.flash {
+    opacity: 0.3;
+    transition: opacity 0.05s ease;
+  }
+
+  .table-wrap::-webkit-scrollbar { width: 6px; height: 6px; }
+  .table-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<div id="flashOverlay"></div>
+
+<header>
+  <div class="title">
+    <div class="eyebrow">SHAMSTRAT PIT HUB</div>
+    <h1>Pit Scouting Receiver</h1>
+  </div>
+  <div class="status">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusText">Camera stopped</span>
+  </div>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>Scanner Controls</h2>
+    <select id="cameraSelect"></select>
+    <div id="reader"></div>
+    <div class="scan-controls">
+      <button class="action btn-primary" id="startBtn">Start Camera</button>
+      <button class="action btn-danger" id="stopBtn">Stop Camera</button>
+    </div>
+    <div class="last-scan">
+      <span class="label">Last Pit Payload Scanned</span>
+      <span id="lastScanText">—</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Pit Scouting Database</h2>
+    <div class="table-toolbar">
+      <div class="count-pill"><strong id="rowCount">0</strong> teams scouted</div>
+      <div class="toolbar-buttons">
+        <button class="action btn-primary" id="downloadBtn">Export Pit CSV</button>
+        <button class="action btn-danger" id="clearBtn">Clear Table</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="dataTable">
+        <thead>
+          <tr id="tableHeadRow"></tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div class="empty-state" id="emptyState">No pit records scanned yet. Point a pit scout's QR code at the camera.</div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // Exact 12 fields generated by pit_scout.html
+  const EXPECTED_HEADERS = [
+    'Team', 'Scout', 'DriveModule', 'DriveMotors', 'Weight', 
+    'Dimensions', 'IntakeType', 'AutoCapability', 'Language', 
+    'DriverExp', 'BuildQuality', 'Notes'
+  ];
+  const DISPLAY_HEADERS = ['Timestamp', ...EXPECTED_HEADERS];
+
+  const teamsMap = new Map(); // Map to store and automatically overwrite updated team info
+  let html5QrCode = null;
+  let lastPayload = null;
+  let lastScanTime = 0;
+
+  const cameraSelect = document.getElementById('cameraSelect');
+  const startBtn = document.getElementById('startBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const flashOverlay = document.getElementById('flashOverlay');
+  const lastScanText = document.getElementById('lastScanText');
+  const tableHeadRow = document.getElementById('tableHeadRow');
+  const tableBody = document.getElementById('tableBody');
+  const emptyState = document.getElementById('emptyState');
+  const rowCountEl = document.getElementById('rowCount');
+
+  function buildHeaderRow() {
+    tableHeadRow.innerHTML = DISPLAY_HEADERS.map(h => `<th>${h}</th>`).join('');
+  }
+  buildHeaderRow();
+
+  function playBeep() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 1046.5; // High C pitch
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.2);
+      osc.onended = () => ctx.close();
+    } catch (e) {}
+  }
+
+  function flashGreen() {
+    flashOverlay.classList.add('flash');
+    setTimeout(() => flashOverlay.classList.remove('flash'), 180);
+  }
+
+  function normalizeRow(rawFields) {
+    const normalized = rawFields.slice(0, EXPECTED_HEADERS.length - 1);
+    while (normalized.length < EXPECTED_HEADERS.length - 1) normalized.push('');
+    const notes = rawFields.slice(EXPECTED_HEADERS.length - 1).join(',');
+    normalized.push(notes);
+    return normalized;
+  }
+
+  function addOrUpdateTeam(decodedText) {
+    const rawFields = decodedText.split(',').map(f => f.trim());
+    const fields = normalizeRow(rawFields);
+    const timestamp = new Date().toLocaleTimeString();
+    const teamNumber = fields[0];
+
+    if (!teamNumber) return;
+
+    // Overwrite existing record if re-scouted
+    teamsMap.set(teamNumber, [timestamp, ...fields]);
+    renderAllRows();
+    emptyState.style.display = 'none';
+  }
+
+  function renderAllRows() {
+    tableBody.innerHTML = '';
+    teamsMap.forEach((row) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = row.map(cell => `<td>${escapeHtml(cell)}</td>`).join('');
+      tableBody.appendChild(tr);
+    });
+    rowCountEl.textContent = teamsMap.size;
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function onScanSuccess(decodedText) {
+    const now = Date.now();
+    if (decodedText === lastPayload && (now - lastScanTime) < 3000) return;
+    lastPayload = decodedText;
+    lastScanTime = now;
+
+    playBeep();
+    flashGreen();
+    lastScanText.textContent = decodedText;
+    addOrUpdateTeam(decodedText);
+  }
+
+  function onScanFailure() {}
+
+  async function populateCameras() {
+    try {
+      const devices = await Html5Qrcode.getCameras();
+      cameraSelect.innerHTML = '';
+      if (!devices || devices.length === 0) {
+        cameraSelect.innerHTML = '<option value="">No cameras found</option>';
+        return;
+      }
+      devices.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.id;
+        opt.textContent = d.label || `Camera ${d.id}`;
+        cameraSelect.appendChild(opt);
+      });
+    } catch (err) {
+      cameraSelect.innerHTML = '<option value="">Camera access denied</option>';
+      statusText.textContent = 'Camera permission denied';
+    }
+  }
+
+  async function startScanning() {
+    const cameraId = cameraSelect.value;
+    if (!cameraId) return;
+
+    if (html5QrCode) {
+      try { await html5QrCode.stop(); } catch (e) {}
+    }
+
+    html5QrCode = new Html5Qrcode('reader');
+    try {
+      await html5QrCode.start(
+        cameraId,
+        { fps: 10, qrbox: { width: 240, height: 240 } },
+        onScanSuccess,
+        onScanFailure
+      );
+      statusDot.classList.add('live');
+      statusText.textContent = 'Camera live — scanning';
+    } catch (err) {
+      statusText.textContent = 'Failed to start camera';
+    }
+  }
+
+  async function stopScanning() {
+    if (html5QrCode) {
+      try {
+        await html5QrCode.stop();
+        html5QrCode.clear();
+      } catch (e) {}
+    }
+    statusDot.classList.remove('live');
+    statusText.textContent = 'Camera stopped';
+  }
+
+  startBtn.addEventListener('click', startScanning);
+  stopBtn.addEventListener('click', stopScanning);
+  cameraSelect.addEventListener('change', () => {
+    if (statusDot.classList.contains('live')) startScanning();
+  });
+
+  function downloadCsv() {
+    if (teamsMap.size === 0) {
+      alert('No scanned pit records to export yet.');
+      return;
+    }
+    const headerLine = DISPLAY_HEADERS.join(',');
+    const dataLines = Array.from(teamsMap.values()).map(row =>
+      row.map(cell => {
+        if (/[",]/.test(cell)) {
+          return `"${cell.replace(/"/g, '""')}"`;
+        }
+        return cell;
+      }).join(',')
+    );
+    const csvContent = [headerLine, ...dataLines].join('\r\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `pit_scouting_data_${Date.now()}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  downloadBtn.addEventListener('click', downloadCsv);
+
+  clearBtn.addEventListener('click', () => {
+    if (teamsMap.size === 0) return;
+    const confirmed = confirm(`Clear all ${teamsMap.size} scanned pit record(s)? This cannot be undone.`);
+    if (!confirmed) return;
+    teamsMap.clear();
+    renderAllRows();
+    emptyState.style.display = 'block';
+    lastPayload = null;
+    lastScanText.textContent = '—';
+  });
+
+  window.addEventListener('load', async () => {
+    await populateCameras();
+    if (cameraSelect.options.length && cameraSelect.value) {
+      startScanning();
+    }
+  });
+</script>
+
+</body>
+</html>
