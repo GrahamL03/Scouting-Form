@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>ShamScout | REBUILT</title>
+<title>ShamScout | REEFSCAPE</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   :root {
@@ -13,9 +13,9 @@
     --card-raised: #3F3F46;
     --text: #F4F4F5;
     --text-dim: #A1A1AA;
-    --accent: #6366F1;
-    --accent-hover: #4F46E5;
-    --accent-secondary: #3B82F6;
+    --accent: #0EA5E9; /* Oceanic Cyan Accent for REEFSCAPE */
+    --accent-hover: #0284C7;
+    --accent-secondary: #38BDF8;
     --border: #3F3F46;
     --green: #10B981;
     --red: #EF4444;
@@ -154,6 +154,39 @@
     gap: 12px;
   }
 
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  /* Checkbox Grid for Auto Path Spots */
+  .checkbox-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card-raised);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .checkbox-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
   /* Stepper Counters */
   .counter-group {
     background: var(--card-raised);
@@ -179,11 +212,11 @@
   }
 
   .stepper button {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     border: none;
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 700;
     cursor: pointer;
     color: #fff;
@@ -197,8 +230,8 @@
   .stepper button:active { transform: scale(0.92); }
 
   .stepper .count {
-    min-width: 36px;
-    font-size: 24px;
+    min-width: 32px;
+    font-size: 22px;
     font-weight: 800;
     font-variant-numeric: tabular-nums;
   }
@@ -350,7 +383,7 @@
 <header>
   <div>
     <div class="eyebrow">SHAMSTRAT SCOUTING SERVICE</div>
-    <h1>REBUILT Scout</h1>
+    <h1>REEFSCAPE Scout</h1>
   </div>
   <div class="team-badge">5907</div>
 </header>
@@ -377,34 +410,99 @@
 
   <section class="card">
     <h2>Autonomous Phase</h2>
+    
     <div class="field">
       <label for="startPos">Starting Position</label>
       <select id="startPos">
-        <option value="Left Trench">Left Trench</option>
-        <option value="Left Follow">Left Follow</option>
-        <option value="Left Bump">Left Bump</option>
-        <option value="Center" selected>Center</option>
-        <option value="Right Bump">Right Bump</option>
-        <option value="Right Follow">Right Follow</option>
-        <option value="Right Trench">Right Trench</option>
+        <option value="Left (Coral Station Side)">Left (Coral Station Side)</option>
+        <option value="Center Reef Side" selected>Center Reef Side</option>
+        <option value="Right (Processor Side)">Right (Processor Side)</option>
+        <option value="Far Cage/Barge Side">Far Cage/Barge Side</option>
+      </select>
+    </div>
+
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">Left Starting Zone (Taxi)</div>
+        <div class="toggle-sub">Fully crossed line in autonomous</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="autoTaxi">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="field" style="margin-top: 14px;">
+      <label>Autonomous Field Spots (Where they go in Auto)</label>
+      <div class="checkbox-grid">
+        <label class="checkbox-item">
+          <input type="checkbox" class="auto-spot" value="Reef (Close)"> Reef (Close)
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" class="auto-spot" value="Reef (Far)"> Reef (Far)
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" class="auto-spot" value="Coral Station"> Coral Station
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" class="auto-spot" value="Processor Zone"> Processor Zone
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" class="auto-spot" value="Midfield Algae"> Midfield Algae
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" class="auto-spot" value="Barge Area"> Barge Area
+        </label>
+      </div>
+    </div>
+
+    <div class="field" style="margin-top: 14px;">
+      <label>Autonomous Actions Summary</label>
+      <select id="autoActionSummary">
+        <option value="None/Stalled">None / Stalled</option>
+        <option value="Taxi Only">Taxi Only</option>
+        <option value="Score Coral L1-L2">Score Coral L1-L2</option>
+        <option value="Score Coral L3-L4">Score Coral L3-L4</option>
+        <option value="Remove/Score Algae">Remove / Score Algae</option>
+        <option value="Multi-Coral Cycle">Multi-Coral Cycle</option>
+        <option value="Coral + Algae Combo">Coral + Algae Combo</option>
       </select>
     </div>
 
     <div class="grid-2" style="margin-top:14px;">
       <div class="counter-group">
-        <div class="field-label">Auto High Fuel</div>
+        <div class="field-label">Auto Coral L1/L2</div>
         <div class="stepper">
-          <button class="minus" data-target="autoHigh" data-delta="-1">−</button>
-          <span class="count" id="autoHigh">0</span>
-          <button class="plus" data-target="autoHigh" data-delta="1">+</button>
+          <button class="minus" data-target="autoCoralLow" data-delta="-1">−</button>
+          <span class="count" id="autoCoralLow">0</span>
+          <button class="plus" data-target="autoCoralLow" data-delta="1">+</button>
         </div>
       </div>
       <div class="counter-group">
-        <div class="field-label">Auto Low Fuel</div>
+        <div class="field-label">Auto Coral L3/L4</div>
         <div class="stepper">
-          <button class="minus" data-target="autoLow" data-delta="-1">−</button>
-          <span class="count" id="autoLow">0</span>
-          <button class="plus" data-target="autoLow" data-delta="1">+</button>
+          <button class="minus" data-target="autoCoralHigh" data-delta="-1">−</button>
+          <span class="count" id="autoCoralHigh">0</span>
+          <button class="plus" data-target="autoCoralHigh" data-delta="1">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top:10px;">
+      <div class="counter-group">
+        <div class="field-label">Auto Algae Removed</div>
+        <div class="stepper">
+          <button class="minus" data-target="autoAlgaeRemoved" data-delta="-1">−</button>
+          <span class="count" id="autoAlgaeRemoved">0</span>
+          <button class="plus" data-target="autoAlgaeRemoved" data-delta="1">+</button>
+        </div>
+      </div>
+      <div class="counter-group">
+        <div class="field-label">Auto Algae Scored</div>
+        <div class="stepper">
+          <button class="minus" data-target="autoAlgaeScored" data-delta="-1">−</button>
+          <span class="count" id="autoAlgaeScored">0</span>
+          <button class="plus" data-target="autoAlgaeScored" data-delta="1">+</button>
         </div>
       </div>
     </div>
@@ -412,36 +510,77 @@
 
   <section class="card">
     <h2>Teleop Phase</h2>
-    <div class="grid-2" style="margin-bottom:14px;">
+    
+    <label style="margin-bottom: 8px;">Coral Scored on Reef</label>
+    <div class="grid-2" style="margin-bottom:10px;">
       <div class="counter-group">
-        <div class="field-label">Teleop High Fuel</div>
+        <div class="field-label">Coral L1 (Trough)</div>
         <div class="stepper">
-          <button class="minus" data-target="teleHigh" data-delta="-1">−</button>
-          <span class="count" id="teleHigh">0</span>
-          <button class="plus" data-target="teleHigh" data-delta="1">+</button>
+          <button class="minus" data-target="teleCoralL1" data-delta="-1">−</button>
+          <span class="count" id="teleCoralL1">0</span>
+          <button class="plus" data-target="teleCoralL1" data-delta="1">+</button>
         </div>
       </div>
       <div class="counter-group">
-        <div class="field-label">Teleop Low Fuel</div>
+        <div class="field-label">Coral L2</div>
         <div class="stepper">
-          <button class="minus" data-target="teleLow" data-delta="-1">−</button>
-          <span class="count" id="teleLow">0</span>
-          <button class="plus" data-target="teleLow" data-delta="1">+</button>
+          <button class="minus" data-target="teleCoralL2" data-delta="-1">−</button>
+          <span class="count" id="teleCoralL2">0</span>
+          <button class="plus" data-target="teleCoralL2" data-delta="1">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:14px;">
+      <div class="counter-group">
+        <div class="field-label">Coral L3</div>
+        <div class="stepper">
+          <button class="minus" data-target="teleCoralL3" data-delta="-1">−</button>
+          <span class="count" id="teleCoralL3">0</span>
+          <button class="plus" data-target="teleCoralL3" data-delta="1">+</button>
+        </div>
+      </div>
+      <div class="counter-group">
+        <div class="field-label">Coral L4</div>
+        <div class="stepper">
+          <button class="minus" data-target="teleCoralL4" data-delta="-1">−</button>
+          <span class="count" id="teleCoralL4">0</span>
+          <button class="plus" data-target="teleCoralL4" data-delta="1">+</button>
+        </div>
+      </div>
+    </div>
+
+    <label style="margin-bottom: 8px;">Algae Scoring</label>
+    <div class="grid-2" style="margin-bottom:14px;">
+      <div class="counter-group">
+        <div class="field-label">Processor Algae</div>
+        <div class="stepper">
+          <button class="minus" data-target="teleAlgaeProcessor" data-delta="-1">−</button>
+          <span class="count" id="teleAlgaeProcessor">0</span>
+          <button class="plus" data-target="teleAlgaeProcessor" data-delta="1">+</button>
+        </div>
+      </div>
+      <div class="counter-group">
+        <div class="field-label">Net Algae (Barge)</div>
+        <div class="stepper">
+          <button class="minus" data-target="teleAlgaeNet" data-delta="-1">−</button>
+          <span class="count" id="teleAlgaeNet">0</span>
+          <button class="plus" data-target="teleAlgaeNet" data-delta="1">+</button>
         </div>
       </div>
     </div>
 
     <div class="field">
-      <label>Intake Source</label>
+      <label>Primary Intake Source</label>
       <div class="segmented" style="--cols:4;">
-        <input type="radio" name="intakeSource" id="intakeFloor" value="Floor" checked>
-        <label for="intakeFloor">Floor</label>
-        <input type="radio" name="intakeSource" id="intakeSource2" value="Outpost">
-        <label for="intakeSource2">Outpost</label>
+        <input type="radio" name="intakeSource" id="intakeCoralStation" value="Coral Station" checked>
+        <label for="intakeCoralStation">Station</label>
+        <input type="radio" name="intakeSource" id="intakeGround" value="Ground">
+        <label for="intakeGround">Ground</label>
+        <input type="radio" name="intakeSource" id="intakeReef" value="Reef">
+        <label for="intakeReef">Reef</label>
         <input type="radio" name="intakeSource" id="intakeBoth" value="Both">
         <label for="intakeBoth">Both</label>
-        <input type="radio" name="intakeSource" id="intakeNone" value="None">
-        <label for="intakeNone">None</label>
       </div>
     </div>
 
@@ -469,11 +608,11 @@
     </div>
     <div class="toggle-row">
       <div>
-        <div class="toggle-label">Beached</div>
-        <div class="toggle-sub">Stuck on field elements or bumps</div>
+        <div class="toggle-label">Tipped / Stranded</div>
+        <div class="toggle-sub">Stuck on field elements or tipped over</div>
       </div>
       <label class="switch danger">
-        <input type="checkbox" id="beached">
+        <input type="checkbox" id="stranded">
         <span class="slider"></span>
       </label>
     </div>
@@ -490,12 +629,13 @@
   <section class="card">
     <h2>Endgame Phase</h2>
     <div class="field">
-      <label for="climbLevel">Tower Climb Level</label>
-      <select id="climbLevel">
-        <option value="None">None</option>
-        <option value="Level 1">Level 1 (Low)</option>
-        <option value="Level 2">Level 2 (Mid)</option>
-        <option value="Level 3">Level 3 (High)</option>
+      <label for="bargeEndgame">Barge / Cage Hang Level</label>
+      <select id="bargeEndgame">
+        <option value="None">None / Did not attempt</option>
+        <option value="Parked">Parked in Barge Zone</option>
+        <option value="Shallow Cage">Shallow Cage (Low)</option>
+        <option value="Deep Cage">Deep Cage (High)</option>
+        <option value="Failed Climb">Failed Climb Attempt</option>
       </select>
     </div>
     <div class="field">
@@ -513,7 +653,7 @@
     <h2>Qualitative Strategy</h2>
     <div class="field">
       <label for="notes">Notes & Observational Feedback</label>
-      <textarea id="notes" placeholder="Driver skill, obstacle navigation speed, cycle pathing, Hub shift reactions..."></textarea>
+      <textarea id="notes" placeholder="Driver accuracy on Reef L4, auto consistency, pathing maneuvers, algae clearing skill, defense reactions..."></textarea>
     </div>
   </section>
 
@@ -531,12 +671,23 @@
     <button class="big" id="clearBtn">Clear Form for Next Match</button>
   </div>
 
-  <footer>ShamScout — FRC 5907 Offline Scouting Platform</footer>
+  <footer>ShamScout — FRC 5907 Offline Scouting Platform (REEFSCAPE Edition)</footer>
 
 </main>
 
 <script>
-  const counts = { autoHigh: 0, autoLow: 0, teleHigh: 0, teleLow: 0 };
+  const counts = { 
+    autoCoralLow: 0, 
+    autoCoralHigh: 0, 
+    autoAlgaeRemoved: 0, 
+    autoAlgaeScored: 0,
+    teleCoralL1: 0, 
+    teleCoralL2: 0, 
+    teleCoralL3: 0, 
+    teleCoralL4: 0,
+    teleAlgaeProcessor: 0,
+    teleAlgaeNet: 0
+  };
 
   document.querySelectorAll('.stepper button').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -556,18 +707,36 @@
     return checked ? checked.value : '';
   }
 
+  function getAutoSpots() {
+    const checkedSpots = Array.from(document.querySelectorAll('.auto-spot:checked')).map(cb => cb.value);
+    return checkedSpots.length > 0 ? checkedSpots.join(';') : 'None';
+  }
+
   function buildCsvRow() {
     const matchNumber = document.getElementById('matchNumber').value.trim();
     const teamNumber = document.getElementById('teamNumber').value.trim();
     const scoutName = document.getElementById('scoutName').value.trim().replace(/[,\n\r]/g, ' ');
+    
+    // Auto
     const autoStartingPos = document.getElementById('startPos').value;
+    const autoTaxi = boolToFlag('autoTaxi');
+    const autoSpots = getAutoSpots().replace(/[,\n\r]/g, ' ');
+    const autoActionSummary = document.getElementById('autoActionSummary').value;
+
+    // Teleop
     const intakeSource = getRadioValue('intakeSource');
     const defRole = document.getElementById('defRole').value;
+    
+    // Failures
     const brokeDown = boolToFlag('brokeDown');
-    const beached = boolToFlag('beached');
+    const stranded = boolToFlag('stranded');
     const penaltyState = document.getElementById('penaltyState').value;
-    const climbLevel = document.getElementById('climbLevel').value;
+    
+    // Endgame
+    const bargeEndgame = document.getElementById('bargeEndgame').value;
     const climbSpeed = document.getElementById('climbSpeed').value;
+    
+    // Notes
     const strategyNotes = document.getElementById('notes').value.trim().replace(/[,\n\r]/g, ' ');
 
     const fields = [
@@ -575,16 +744,25 @@
       teamNumber,
       scoutName,
       autoStartingPos,
-      counts.autoHigh,
-      counts.autoLow,
-      counts.teleHigh,
-      counts.teleLow,
+      autoTaxi,
+      autoSpots,
+      autoActionSummary,
+      counts.autoCoralLow,
+      counts.autoCoralHigh,
+      counts.autoAlgaeRemoved,
+      counts.autoAlgaeScored,
+      counts.teleCoralL1,
+      counts.teleCoralL2,
+      counts.teleCoralL3,
+      counts.teleCoralL4,
+      counts.teleAlgaeProcessor,
+      counts.teleAlgaeNet,
       intakeSource,
       defRole,
       brokeDown,
-      beached,
+      stranded,
       penaltyState,
-      climbLevel,
+      bargeEndgame,
       climbSpeed,
       strategyNotes
     ];
@@ -615,13 +793,18 @@
   document.getElementById('clearBtn').addEventListener('click', () => {
     document.getElementById('matchNumber').value = '';
     document.getElementById('teamNumber').value = '';
-    document.getElementById('startPos').value = 'Center';
-    document.getElementById('intakeFloor').checked = true;
+    document.getElementById('startPos').value = 'Center Reef Side';
+    document.getElementById('autoTaxi').checked = false;
+    
+    document.querySelectorAll('.auto-spot').forEach(cb => cb.checked = false);
+    document.getElementById('autoActionSummary').value = 'None/Stalled';
+
+    document.getElementById('intakeCoralStation').checked = true;
     document.getElementById('defRole').value = 'None';
     document.getElementById('brokeDown').checked = false;
-    document.getElementById('beached').checked = false;
+    document.getElementById('stranded').checked = false;
     document.getElementById('penaltyState').value = 'Clean Match';
-    document.getElementById('climbLevel').value = 'None';
+    document.getElementById('bargeEndgame').value = 'None';
     document.getElementById('climbSpeed').value = 'N/A';
     document.getElementById('notes').value = '';
 
