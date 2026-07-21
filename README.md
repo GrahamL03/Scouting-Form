@@ -1,0 +1,1 @@
+Scouting form is available at https://grahaml03.github.io/Scouting-Form/index.html     Receiver is available at https://grahaml03.github.io/Scouting-Form/receiver.html           Strategy is available at https://grahaml03.github.io/Scouting-Form/strategy.html              Pit is availiable at https://grahaml03.github.io/Scouting-Form/pit-scout.html
