@@ -13,9 +13,9 @@
     --card-raised: #3F3F46;
     --text: #F4F4F5;
     --text-dim: #A1A1AA;
-    --accent: #6366F1;
-    --accent-hover: #4F46E5;
-    --accent-secondary: #3B82F6;
+    --accent: #0EA5E9; /* Oceanic Cyan Accent for REEFSCAPE */
+    --accent-hover: #0284C7;
+    --accent-secondary: #38BDF8;
     --border: #3F3F46;
     --green: #10B981;
     --red: #EF4444;
@@ -80,7 +80,7 @@
   .status .dot.live { background: var(--green); box-shadow: 0 0 8px var(--green); }
 
   main {
-    max-width: 1300px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
     display: grid;
@@ -297,7 +297,7 @@
 <header>
   <div class="title">
     <div class="eyebrow">SHAMSTRAT PIT HUB</div>
-    <h1>Master Receiver</h1>
+    <h1>Master Receiver (REEFSCAPE)</h1>
   </div>
   <div class="status">
     <span class="dot" id="statusDot"></span>
@@ -344,11 +344,13 @@
 </main>
 
 <script>
-  // UPDATED: Exact 16 CSV fields exported by ShamScout index.html
+  // EXACT 25 CSV headers outputted by the REEFSCAPE scout form
   const EXPECTED_HEADERS = [
-    'Match', 'Team', 'Scout', 'StartPos', 'AutoHigh', 'AutoLow',
-    'TeleHigh', 'TeleLow', 'IntakeSource', 'DefRole', 'BrokeDown', 'Beached',
-    'Penalties', 'ClimbLevel', 'ClimbSpeed', 'Notes'
+    'Match', 'Team', 'Scout', 'StartPos', 'AutoTaxi', 'AutoPath',
+    'AutoCoralLow', 'AutoCoralHigh', 'AutoAlgaeRemoved', 'AutoAlgaeScored',
+    'TeleCoralL1', 'TeleCoralL2', 'TeleCoralL3', 'TeleCoralL4',
+    'TeleAlgaeProcessor', 'TeleAlgaeNet', 'IntakeSource', 'DefRole',
+    'BrokeDown', 'Stranded', 'Penalties', 'BargeEndgame', 'ClimbSpeed', 'Notes'
   ];
   const DISPLAY_HEADERS = ['Timestamp', ...EXPECTED_HEADERS];
 
